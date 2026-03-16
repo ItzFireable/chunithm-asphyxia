@@ -1,0 +1,67 @@
+//DATA//
+  profile: DB.FindOne({ userId })
+  songs: DB.Find({ userId, collection: 'music' })
+  chars: DB.Find({ userId, collection: 'character' })
+
+-
+  const p = profile || { userName: 'Unknown', level: 1, playerRating: 0 };
+
+div
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-account
+        | Chunithm Profile: #{p.userName}
+    .card-content
+      .columns
+        .column
+          strong Level: 
+          | #{p.level}
+        .column
+          strong Rating: 
+          | #{p.playerRating / 100}
+        .column
+          strong Play Count: 
+          | #{p.playCount || 0}
+      
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-music
+        | Recent Scores
+    .card-content
+      table.table.is-fullwidth.is-striped
+        thead
+          tr
+            th Music ID
+            th Level
+            th Score
+            th Grade
+            th Clear
+        tbody
+          each s in songs
+            tr
+              td #{s.musicId}
+              td #{s.level}
+              td #{s.scoreMax}
+              td #{s.grade}
+              td #{s.clearStatus}
+
+  if chars && chars.length > 0
+    .card
+        .card-header
+            p.card-header-title
+                span.icon
+                    i.mdi.mdi-account-multiple
+                | Characters
+        .card-content
+            .columns.is-multiline
+                each c in chars
+                    .column.is-one-quarter
+                        .box
+                            p
+                                strong ID: #{c.characterId}
+                            p Level: #{c.level}
+                            progress.progress.is-small.is-primary(value=c.exp max=100)
