@@ -3,15 +3,9 @@ import * as profiles from './handlers/profiles';
 
 /**
  * Chunithm X-VERSE-X Plugin for Asphyxia CORE
- * 
+ *
  * Ported/Authored by: Fireable
  * Special thanks to: Asphyxia Team, Artemis Devs
- * 
- * Features:
- * - 1:1 ARTEMiS data support
- * - Full score, item, and character persistence
- * - Integrated Profile WebUI
- * - AES-CBC encryption/decryption handling
  */
 export const register = async () => {
   R.GameCode('SDBT');
@@ -20,47 +14,120 @@ export const register = async () => {
   R.GameCode('SDHJ');
 
   R.Contributor('Fireable');
-  R.Config('unlock_all_songs', {
-    type: 'boolean',
-    default: true,
-    desc: 'Unlocks all songs for all players.',
-  });
-  R.Config('unlock_all_items', {
-    type: 'boolean',
-    default: false,
-    desc: 'Unlocks all system items and characters.',
-  });
-  R.Config('infinite_tickets', {
-    type: 'boolean',
-    default: true,
-    desc: 'Provides infinite event/map tickets.',
-  });
+  R.Config('unlock_all_songs', { type: 'boolean', default: true,  desc: 'Unlocks all songs for all players.' });
+  R.Config('unlock_all_items',  { type: 'boolean', default: false, desc: 'Unlocks all system items and characters.' });
+  R.Config('infinite_tickets',  { type: 'boolean', default: true,  desc: 'Provides infinite event/map tickets.' });
 
-  // --- SEGA Metadata Registration ---
+  // ── SEGA Metadata ────────────────────────────────────────────────────────
+  // Method names must EXACTLY match what the game hashes.
+  // Derived from artemis: inflection.camelize(handle_X_api_request)[6:-7] + "Api"
+  // Any name mismatch means the PBKDF2 hash won't resolve and the endpoint is silently dropped.
   R.SegaMethodNames([
+    // game / server meta
     'GetGameSetting', 'GetGameEvent', 'GetGameMessage', 'GetGameCharge',
     'GetGameGachaCardList', 'GetGameMapAreaCondition', 'GetGameCourseLevel',
-    'GetGameRankingCount', 'GetGameIdlist', 'GameLogin', 'GameLogout', 'GetUserPreview',
-    'GetUserData', 'GetUserDataEx', 'GetUserCharacterSelect', 'GetUserItem',
-    'GetUserItemEx', 'GetUserCharacter', 'GetUserGameOption', 'GetUserGameOptionEx',
+    'GetGameRankingApi',    // artemis: handle_get_game_ranking_api_request
+    'GetGameSaleApi',       // artemis: handle_get_game_sale_api_request
+    'GetGameIdlist',
+    'GetGameUCConditionApi',          // VERSE: unlock challenge conditions
+    'GetGameLVConditionOpenApi',      // X-VERSE: linked verse open conditions
+    'GetGameLVConditionUnlockApi',    // X-VERSE: linked verse unlock conditions
+
+    // session
+    'GameLogin', 'GameLogout',
+
+    // user profile
+    'GetUserPreview',
+    'GetUserData', 'GetUserDataEx',
+    'GetUserOptionApi',   // artemis: handle_get_user_option_api_request → userGameOption
+    'GetUserOptionExApi', // artemis: handle_get_user_option_ex_api_request → userGameOptionEx
+
+    // scores / music
+    'GetUserMusicApi',    // artemis: handle_get_user_music_api_request → userMusicList (grouped)
+
+    // ratings
     'GetUserRecentRating', 'GetUserBestRating', 'GetUserRatinglog',
-    'GetUserCourse', 'GetUserPlaylog', 'GetUserMusicItem', 'GetUserFavoriteItem',
-    'GetUserActivity', 'GetUserCharge', 'GetUserGacha', 'GetUserMacDetail',
-    'GetUserLoginBonus', 'GetUserLoginBonusInfo', 'GetUserDuelList',
-    'GetUserUnlockItem', 'GetUserCtoCPlay', 'GetUserMapArea', 'UpsertUserAll',
-    'BeginMatching', 'EndMatching', 'GetMatchingState', 'CMGetUserCharacter',
-    'CMUpsertUserFavoriteItem', 'CMUpsertUserGachaTicket', 'CMUpsertUserPrintSubData',
-    'CMUpsertUserPrint', 'CMUpsertUserPrintCancel', 'CMGetUserPreview',
-    'GetUserRecommendMusicList', 'GetUserRecommendRateMusicList',
-    'GetUserCMissionProgress', 'GetUserFavoriteMusic', 'GetUserMapAreaCondition',
-    'GetUserUCProgress', 'UpsertClientTestmode', 'UpsertClientBookkeeping',
-    'UpsertClientDevelop', 'UpsertClientError', 'UpsertClientSetting',
-    'UpsertClientUpload', 'Ping',
+
+    // characters / items
+    'GetUserCharacterSelect',
+    'GetUserItem', 'GetUserItemEx',
+    'GetUserCharacter',
+
+    // maps / courses
+    'GetUserMapApi',      // artemis: handle_get_user_map_api_request → userMapList
+    'GetUserMapArea', 'GetUserMapAreaCondition',
+    'GetUserCourse',
+
+    // activities / charges
+    'GetUserActivity', 'GetUserCharge',
+
+    // social
+    'GetUserTeamApi',           // artemis: handle_get_user_team_api_request
+    'GetTeamCourseSettingApi',  // artemis: handle_get_team_course_setting_api_request
+    'GetTeamCourseRuleApi',     // artemis: handle_get_team_course_rule_api_request
+    'GetUserRecentPlayerApi',   // artemis: handle_get_user_recent_player_api_request
+    'GetUserRegionApi',         // artemis: handle_get_user_region_api_request
+    'GetUserRivalDataApi',      // artemis: handle_get_user_rival_data_api_request
+    'GetUserRivalMusicApi',     // artemis: handle_get_user_rival_music_api_request
+
+    // duels / favorites
+    'GetUserDuelApi',         // artemis: handle_get_user_duel_api_request → userDuelList
+    'GetUserFavoriteItem', 'GetUserFavoriteMusic',
+    'GetUserUnlockItem',
+
+    // gacha / billing
+    'GetUserGacha',
+    'GetUserMacDetail',
+
+    // login bonus
+    'GetUserLoginBonus', 'GetUserLoginBonusInfo',
+
+    // play history
+    'GetUserPlaylog',
+
+    // CtoC / UC Progress
+    'GetUserCtoCPlay',
+    'GetUserUCProgressApi',   // old name kept for compat
+
+    // net battle (LUMINOUS+)
+    'GetUserNetBattleDataApi',          // artemis: handle_get_user_net_battle_data_api_request
+    'GetUserNetBattleRankingInfoApi',   // artemis: handle_get_user_net_battle_ranking_info_api_request
+
+    // C-Mission (LUMINOUS)
+    'GetUserCMissionApi',               // artemis: handle_get_user_c_mission_api_request
+    'GetUserCMissionProgress',          // older name used in some versions
+    'GetUserCMissionListApi',           // list variant
+
+    // Unlock Challenge (VERSE)
+    'GetUserUCApi',                     // artemis: handle_get_user_u_c_api_request
+
+    // Recommendations (VERSE)
+    'GetUserRecMusicApi',               // artemis: handle_get_user_rec_music_api_request
+    'GetUserRecRatingApi',              // artemis: handle_get_user_rec_rating_api_request
+
+    // Linked VERSE (X-VERSE)
+    'GetUserLVApi',                     // artemis: handle_get_user_l_v_api_request
+
+    // upsert
+    'UpsertUserAll',
+    'UpsertUserChargelogApi',           // artemis: handle_upsert_user_chargelog_api_request
+    'UpsertClientTestmode', 'UpsertClientBookkeeping', 'UpsertClientDevelop',
+    'UpsertClientError', 'UpsertClientSetting', 'UpsertClientUpload',
+
+    // matching
+    'BeginMatching', 'EndMatching', 'GetMatchingState',
+
+    // card machine
+    'CMGetUserCharacter', 'CMGetUserPreview',
+    'CMUpsertUserFavoriteItem', 'CMUpsertUserGachaTicket',
+    'CMUpsertUserPrintSubData', 'CMUpsertUserPrint', 'CMUpsertUserPrintCancel',
+
+    'Ping',
   ]);
 
   R.SegaIterCounts({
-    '9': 67, '10': 44, '11': 54, '12': 25, '13': 70, '14': 36,
-    '15': 8, '16': 56, '17': 42, '18': 14,
+    '9':  67, '10': 44, '11': 54, '12': 25, '13': 70, '14': 36,
+    '15': 8,  '16': 56, '17': 42, '18': 14,
   });
 
   R.SegaVersionMap((gameCode: string, version: number) => {
@@ -114,17 +181,17 @@ export const register = async () => {
   });
 };
 
-// Generic SEGA dispatcher used by SegaRouter
 export const handleSega = async (gameCode: string, method: string, data: any) => {
+  // Strip "Api" suffix — game sends "GetUserMusicApi", we store handler as "GetUserMusic"
+  // Also strip legacy "Api" variants
   const cleanMethod = method.replace(/Api$/, '');
 
-  // Try profiles first, then common
   const handler = (profiles as any)[cleanMethod] || (common as any)[cleanMethod];
 
   if (typeof handler === 'function') {
     return await handler(data);
   }
 
-  console.warn(`[Chunithm] Unhandled method: ${method}`);
+  console.warn(`[Chunithm] Unhandled method: ${method} (cleaned: ${cleanMethod})`);
   return { returnCode: 1 };
 };

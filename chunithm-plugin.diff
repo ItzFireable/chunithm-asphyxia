@@ -1,0 +1,1513 @@
+diff --git a/handlers/common.ts b/handlers/common.ts
+index 7ab15d3..6bf68fd 100644
+--- a/handlers/common.ts
++++ b/handlers/common.ts
+@@ -1,46 +1,69 @@
+ import { Profile } from '../models/profile';
+ 
+-export const GetGameSetting = async (data: any) => {
+-  return {
+-    gameSetting: {
+-      dataVersion: '2.40.00',
+-      isMaintenance: 'false',
+-      requestInterval: 10,
+-      rebootStartTime: '2020-01-01 07:00:00.0',
+-      rebootEndTime: '2020-01-01 08:00:00.0',
+-      isBackgroundDistribute: 'false',
+-      maxCountCharacter: 300,
+-      maxCountItem: 300,
+-      maxCountMusic: 300,
+-    },
+-    isDumpUpload: 'false',
+-    isAou: 'false',
+-  };
+-};
+-
+-export const GetGameEvent = async (data: any) => {
+-  return {
+-    type: data.type ?? 1,
+-    length: 0,
+-    gameEventList: [],
+-  };
+-};
+-
+-export const GetGameMessage = async (data: any) => {
+-  return {
+-    type: data.type ?? 1,
+-    length: 1,
+-    gameMessageList: [
+-      {
+-        id: 1,
+-        type: 1,
+-        message: 'Welcome to Asphyxia Arcade!',
+-        startDate: '2017-12-05 07:00:00.0',
+-        endDate: '2099-12-31 00:00:00.0',
+-      },
+-    ],
+-  };
+-};
++export const GetGameSetting = async (data: any) => ({
++  gameSetting: {
++    dataVersion: '2.40.00',
++    isMaintenance: 'false',
++    requestInterval: 10,
++    rebootStartTime: '2020-01-01 07:00:00.0',
++    rebootEndTime: '2020-01-01 08:00:00.0',
++    isBackgroundDistribute: 'false',
++    maxCountCharacter: 300, maxCountItem: 300, maxCountMusic: 300,
++  },
++  isDumpUpload: 'false',
++  isAou: 'false',
++});
++
++export const GetGameEvent = async (data: any) => ({
++  type: data.type ?? 1, length: 0, gameEventList: [],
++});
++
++export const GetGameMessage = async (data: any) => ({
++  type: data.type ?? 1,
++  length: 1,
++  gameMessageList: [{
++    id: 1, type: 1,
++    message: 'Welcome to Asphyxia Arcade!',
++    startDate: '2017-12-05 07:00:00.0',
++    endDate: '2099-12-31 00:00:00.0',
++  }],
++});
++
++export const GetGameCharge = async (data: any) => ({ length: 0, gameChargeList: [] });
++export const GetGameIdlist = async (data: any) => ({ type: data.type ?? 1, length: 0, gameIdlistList: [] });
++
++// artemis: handle_get_game_sale_api_request
++export const GetGameSale = async (data: any) => ({ type: data.type ?? 1, length: 0, gameSaleList: [] });
++
++// artemis: handle_get_game_ranking_api_request
++export const GetGameRanking = async (data: any) => ({ type: data.type ?? 1, gameRankingList: [] });
++
++export const GetGameGachaCardList = async (data: any) => ({
++  length: 0, isUpdated: false, lastUpdatedDate: '2020-01-01 00:00:00.0', gameGachaCardList: [],
++});
++
++export const GetGameCourseLevel = async (data: any) => ({ length: 0, gameCourseLevelList: [] });
++
++export const GetGameMapAreaCondition = async (data: any) => ({ length: 0, gameMapAreaConditionList: [] });
++
++// artemis: handle_get_game_ranking_count_api_request (not in artemis, keep for compat)
++export const GetGameRankingCount = async (data: any) => ({ rankingCount: 0 });
++
++// Unlock Challenge conditions (VERSE) — artemis: handle_get_game_u_c_condition_api_request
++export const GetGameUCCondition = async (data: any) => ({
++  length: 0, gameUnlockChallengeConditionList: [],
++});
++
++// Linked VERSE conditions (X-VERSE) — artemis: handle_get_game_l_v_condition_open/unlock
++export const GetGameLVConditionOpen = async (data: any) => ({
++  length: 0, gameLinkedVerseConditionOpenList: [],
++});
++
++export const GetGameLVConditionUnlock = async (data: any) => ({
++  length: 0, gameLinkedVerseConditionUnlockList: [],
++});
++
++// ── Session ───────────────────────────────────────────────────────────────────
+ 
+ export const GameLogin = async (data: any) => {
+   const userId = data.userId;
+@@ -52,88 +75,25 @@ export const GameLogin = async (data: any) => {
+   return { returnCode: 1 };
+ };
+ 
+-export const GameLogout = async (data: any) => {
+-  return { returnCode: 1 };
+-};
++export const GameLogout = async (data: any) => ({ returnCode: 1 });
+ 
+-export const GetGameIdlist = async (data: any) => {
+-  return {
+-    type: data.type ?? 1,
+-    length: 0,
+-    gameIdlistList: [],
+-  };
+-};
+-
+-export const GetGameCharge = async (data: any) => {
+-  return {
+-    length: 0,
+-    gameChargeList: [],
+-  };
+-};
+-
+-// Game supplies the gacha card pool list. Empty is safe, no gacha shown.
+-export const GetGameGachaCardList = async (data: any) => {
+-  return {
+-    length: 0,
+-    isUpdated: false,
+-    lastUpdatedDate: '2020-01-01 00:00:00.0',
+-    gameGachaCardList: [],
+-  };
+-};
+-
+-// Challenge chart course definitions. Empty is safe.
+-export const GetGameCourseLevel = async (data: any) => {
+-  return {
+-    length: 0,
+-    gameCourseList: [],
+-  };
+-};
+-
+-// Map area unlock conditions. Empty is safe.
+-export const GetGameMapAreaCondition = async (data: any) => {
+-  return {
+-    length: 0,
+-    gameMapAreaConditionList: [],
+-  };
+-};
+-
+-// Online ranking player count. 0 is fine for a private server.
+-export const GetGameRankingCount = async (data: any) => {
+-  return {
+-    rankingCount: 0,
+-  };
+-};
+-
+-// -----------------------------------------------------------------------
+-// Client diagnostic upserts — fire-and-forget from the game client.
+-// The game does NOT inspect the response body beyond returnCode.
+-// Missing these causes boot loops on some versions.
+-// -----------------------------------------------------------------------
++// ── Client upserts — fire and forget ─────────────────────────────────────────
+ 
+ export const UpsertClientBookkeeping = async (data: any) => ({ returnCode: 1 });
+-export const UpsertClientDevelop = async (data: any) => ({ returnCode: 1 });
+-export const UpsertClientError = async (data: any) => ({ returnCode: 1 });
+-export const UpsertClientSetting = async (data: any) => ({ returnCode: 1 });
+-export const UpsertClientTestmode = async (data: any) => ({ returnCode: 1 });
+-export const UpsertClientUpload = async (data: any) => ({ returnCode: 1 });
+-
+-// -----------------------------------------------------------------------
+-// Matching endpoints
+-// Returning a safe "no match found" state prevents hangs in solo play.
+-// Uses an in-memory map — resets on server restart, fine for private use.
+-// -----------------------------------------------------------------------
++export const UpsertClientDevelop     = async (data: any) => ({ returnCode: 1 });
++export const UpsertClientError       = async (data: any) => ({ returnCode: 1 });
++export const UpsertClientSetting     = async (data: any) => ({ returnCode: 1 });
++export const UpsertClientTestmode    = async (data: any) => ({ returnCode: 1 });
++export const UpsertClientUpload      = async (data: any) => ({ returnCode: 1 });
++
++// ── Matching ──────────────────────────────────────────────────────────────────
+ 
+ const matchingRooms: Record<string, any> = {};
+ 
+ export const BeginMatching = async (data: any) => {
+   const roomId = `room_${data.userId}_${Date.now()}`;
+   matchingRooms[roomId] = { roomId, userId: data.userId };
+-  return {
+-    returnCode: 1,
+-    roomId,
+-    matchingMemberInfoList: [{ userId: data.userId, memberState: 1 }],
+-    matchingWaitTime: 0,
+-  };
++  return { returnCode: 1, roomId, matchingMemberInfoList: [{ userId: data.userId, memberState: 1 }], matchingWaitTime: 0 };
+ };
+ 
+ export const EndMatching = async (data: any) => {
+@@ -141,13 +101,8 @@ export const EndMatching = async (data: any) => {
+   return { returnCode: 1 };
+ };
+ 
+-export const GetMatchingState = async (data: any) => {
+-  return {
+-    returnCode: 1,
+-    matchingMemberInfoList: [],
+-    matchingWaitTime: 0,
+-    roomId: data.roomId ?? '',
+-  };
+-};
++export const GetMatchingState = async (data: any) => ({
++  returnCode: 1, matchingMemberInfoList: [], matchingWaitTime: 0, roomId: data.roomId ?? '',
++});
+ 
+-export const Ping = async () => ({ returnCode: 1 });
+\ No newline at end of file
++export const Ping = async () => ({ returnCode: 1 });
+diff --git a/handlers/profiles.ts b/handlers/profiles.ts
+index a59c0b1..7cc2d2f 100644
+--- a/handlers/profiles.ts
++++ b/handlers/profiles.ts
+@@ -6,9 +6,7 @@ async function getProfile(userId: number) {
+   return await DB.FindOne<Profile>({ userId });
+ }
+ 
+-// -----------------------------------------------------------------------
+-// Profile preview — called on title screen card scan
+-// -----------------------------------------------------------------------
++// ── Preview ──────────────────────────────────────────────────────────────────
+ 
+ export const GetUserPreview = async (data: any) => {
+   const userId = data.userId;
+@@ -20,84 +18,49 @@ export const GetUserPreview = async (data: any) => {
+       isLogin: false,
+       lastLoginDate: '2020-01-01 00:00:00.0',
+       userName: 'PLAYER',
+-      reincarnationNum: 0,
+-      level: 1,
+-      exp: 0,
+-      playerRating: 0,
+-      lastGameId: 'SDBT',
+-      lastRomVersion: '2.40.00',
+-      lastDataVersion: '2.40.00',
+-      lastPlayDate: '2020-01-01 00:00:00.0',
+-      trophyId: 0,
+-      nameplateId: 0,
+-      userCharacter: {
+-        characterId: 10,
+-        level: 1,
+-        exp: 0,
+-        exValue: 0,
+-        playCount: 1,
+-        isNewMark: false,
+-        isEnlightenance: false,
+-      },
+-      playerLevel: 1,
+-      rating: 0,
+-      headphone: 0,
+-      chargeState: 1,
+-      userNameEx: 'PLAYER',
++      reincarnationNum: 0, level: 1, exp: 0, playerRating: 0,
++      lastGameId: 'SDBT', lastRomVersion: '2.40.00', lastDataVersion: '2.40.00',
++      lastPlayDate: '2020-01-01 00:00:00.0', trophyId: 0, nameplateId: 0,
++      userCharacter: { characterId: 10, level: 1, exp: 0, exValue: 0, playCount: 1, isNewMark: false, isEnlightenance: false },
++      playerLevel: 1, rating: 0, headphone: 0, chargeState: 1, userNameEx: 'PLAYER',
+     };
+   }
+ 
+   return {
+-    userId,
+-    isLogin: false,
++    userId, isLogin: false,
+     lastLoginDate: profile.lastPlayDate ?? '2020-01-01 00:00:00.0',
+     userName: profile.userName ?? 'PLAYER',
+     reincarnationNum: profile.reincarnationNum ?? 0,
+-    level: profile.level ?? 1,
+-    exp: profile.exp ?? 0,
++    level: profile.level ?? 1, exp: profile.exp ?? 0,
+     playerRating: profile.playerRating ?? 0,
+     lastGameId: profile.lastGameId ?? 'SDBT',
+     lastRomVersion: profile.lastRomVersion ?? '2.40.00',
+     lastDataVersion: profile.lastDataVersion ?? '2.40.00',
+     lastPlayDate: profile.lastPlayDate ?? '2020-01-01 00:00:00.0',
+-    trophyId: profile.trophyId ?? 0,
+-    nameplateId: profile.nameplateId ?? 0,
++    trophyId: profile.trophyId ?? 0, nameplateId: profile.nameplateId ?? 0,
+     userCharacter: {
+       characterId: profile.characterId ?? 10,
+-      level: 1,
+-      exp: 0,
+-      exValue: 0,
+-      playCount: 1,
+-      isNewMark: false,
+-      isEnlightenance: false,
++      level: 1, exp: 0, exValue: 0, playCount: 1, isNewMark: false, isEnlightenance: false,
+     },
+-    playerLevel: profile.level ?? 1,
+-    rating: profile.playerRating ?? 0,
+-    headphone: 0,
+-    chargeState: 1,
+-    userNameEx: profile.userName ?? 'PLAYER',
++    playerLevel: profile.level ?? 1, rating: profile.playerRating ?? 0,
++    headphone: 0, chargeState: 1, userNameEx: profile.userName ?? 'PLAYER',
+   };
+ };
+ 
+ export const CMGetUserPreview = GetUserPreview;
+ 
+-// -----------------------------------------------------------------------
+-// Core profile data
+-// -----------------------------------------------------------------------
++// ── Core profile ─────────────────────────────────────────────────────────────
+ 
+ export const GetUserData = async (data: any) => {
+-  const userId = data.userId;
+-  const profile = await getProfile(userId);
+-  if (!profile) return { userId, userData: {} };
+-  return { userId, userData: profile };
++  const profile = await getProfile(data.userId);
++  return profile ? { userId: data.userId, userData: profile } : { userId: data.userId, userData: {} };
+ };
+ 
+ export const GetUserDataEx = async (data: any) => {
+-  const userId = data.userId;
+-  const profile = await getProfile(userId);
+-  if (!profile) return { userId, userDataEx: {} };
++  const profile = await getProfile(data.userId);
++  if (!profile) return { userId: data.userId, userDataEx: {} };
+   return {
+-    userId,
++    userId: data.userId,
+     userDataEx: {
+       compatibleCmRomVersion: profile.lastRomVersion ?? '2.40.00',
+       medal: profile.medal ?? 0,
+@@ -105,345 +68,454 @@ export const GetUserDataEx = async (data: any) => {
+   };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// UpsertUserAll — main save endpoint called at end of every session
+-// -----------------------------------------------------------------------
++// ── Game options — artemis: GetUserOptionApi / GetUserOptionExApi ─────────────
++// These were previously named GetUserGameOption/Ex — the game actually sends
++// GetUserOptionApi which strips to GetUserOption after "Api" removal.
+ 
+-export const UpsertUserAll = async (data: any) => {
+-  const userId = data.userId;
+-  const upsert = data.upsertUserAll ?? {};
++export const GetUserOption = async (data: any) => {
++  const opt = await DB.FindOne({ userId: data.userId, collection: 'gameOption' });
++  return { userId: data.userId, userGameOption: opt ?? {} };
++};
+ 
+-  const updates: Partial<Profile> = { userId };
++export const GetUserOptionEx = async (data: any) => {
++  const opt = await DB.FindOne({ userId: data.userId, collection: 'gameOptionEx' });
++  return { userId: data.userId, userGameOptionEx: opt ?? {} };
++};
+ 
+-  if (upsert.userData?.[0]) Object.assign(updates, upsert.userData[0]);
+-  if (upsert.userDataEx?.[0]) Object.assign(updates, upsert.userDataEx[0]);
++// Keep old names as aliases for any version that sends the old form
++export const GetUserGameOption   = GetUserOption;
++export const GetUserGameOptionEx = GetUserOptionEx;
+ 
+-  if (upsert.userCharacterList) {
+-    for (const char of upsert.userCharacterList) {
+-      await DB.Upsert<Character>({ userId, characterId: char.characterId }, { $set: char });
+-    }
+-  }
++// ── Music scores — artemis: GetUserMusicApi → GetUserMusic ────────────────────
++// CRITICAL: artemis groups scores by musicId and returns userMusicList with
++// nested userMusicDetailList. The old name GetUserMusicItem returned a flat list
++// with userMusicItemList. X-VERSE sends GetUserMusicApi so we must use the
++// artemis structure or scores will never load.
+ 
+-  if (upsert.userMusicItemList) {
+-    for (const music of upsert.userMusicItemList) {
+-      await DB.Upsert<MusicRecord>(
+-        { userId, musicId: music.musicId, level: music.level },
+-        { $set: music }
+-      );
+-    }
+-  }
++export const GetUserMusic = async (data: any) => {
++  const userId   = data.userId;
++  const nextIdx  = parseInt(data.nextIndex ?? '0');
++  const maxCount = parseInt(data.maxCount ?? '300');
+ 
+-  if (upsert.userItemList) {
+-    for (const item of upsert.userItemList) {
+-      await DB.Upsert<Item>(
+-        { userId, itemType: item.itemType, itemId: item.itemId },
+-        { $set: item }
+-      );
+-    }
++  const records = await DB.Find<MusicRecord>({ userId });
++  if (!records || records.length === 0) {
++    return { userId, length: 0, nextIndex: -1, userMusicList: [] };
+   }
+ 
+-  // Save game options if provided
+-  if (upsert.userGameOption?.[0]) {
+-    await DB.Upsert({ userId, collection: 'gameOption' }, { $set: { userId, ...upsert.userGameOption[0] } });
+-  }
+-  if (upsert.userGameOptionEx?.[0]) {
+-    await DB.Upsert({ userId, collection: 'gameOptionEx' }, { $set: { userId, ...upsert.userGameOptionEx[0] } });
++  // Group by musicId, matching artemis handle_get_user_music_api_request
++  const grouped: Record<number, any[]> = {};
++  for (const r of records) {
++    if (!grouped[r.musicId]) grouped[r.musicId] = [];
++    grouped[r.musicId].push(r);
+   }
+ 
+-  // Save activity list (stamped play history shown in profile)
+-  if (upsert.userActivityList) {
+-    for (const activity of upsert.userActivityList) {
+-      await DB.Upsert(
+-        { userId, collection: 'activity', kind: activity.kind, id: activity.id },
+-        { $set: { userId, collection: 'activity', ...activity } }
+-      );
+-    }
+-  }
++  const musicList: any[] = [];
++  const musicIds = Object.keys(grouped).map(Number).slice(nextIdx, nextIdx + maxCount + 1);
+ 
+-  // Save favorite items
+-  if (upsert.userFavoriteList) {
+-    for (const fav of upsert.userFavoriteList) {
+-      await DB.Upsert(
+-        { userId, collection: 'favorite', itemId: fav.itemId },
+-        { $set: { userId, collection: 'favorite', ...fav } }
+-      );
+-    }
++  for (const musicId of musicIds.slice(0, maxCount)) {
++    const details = grouped[musicId].map(d => {
++      const { userId: _u, ...rest } = d;
++      return rest;
++    });
++    musicList.push({ length: details.length, userMusicDetailList: details });
+   }
+ 
+-  // Save course data
+-  if (upsert.userCourseList) {
+-    for (const course of upsert.userCourseList) {
+-      await DB.Upsert(
+-        { userId, collection: 'course', courseId: course.courseId },
+-        { $set: { userId, collection: 'course', ...course } }
+-      );
+-    }
+-  }
++  const newNextIdx = musicIds.length > maxCount ? nextIdx + maxCount : -1;
++  return { userId, length: musicList.length, nextIndex: newNextIdx, userMusicList: musicList };
++};
+ 
+-  // Save playlog
+-  if (upsert.userPlaylogList) {
+-    for (const log of upsert.userPlaylogList) {
+-      await DB.Insert({ userId, collection: 'playlog', ...log });
+-    }
+-  }
++// Keep old flat name for any version still using it
++export const GetUserMusicItem = async (data: any) => {
++  const records = await DB.Find<MusicRecord>({ userId: data.userId });
++  return { userId: data.userId, length: records.length, userMusicItemList: records };
++};
+ 
+-  updates.lastPlayDate = new Date().toISOString().replace('T', ' ').split('.')[0] + '.0';
+-  await DB.Upsert<Profile>({ userId }, { $set: updates });
++// ── Map — artemis: GetUserMapApi → GetUserMap ─────────────────────────────────
++// artemis returns userMapList; old plugin returned userMapAreaList
+ 
+-  return { returnCode: 1 };
++export const GetUserMap = async (data: any) => {
++  const maps = await DB.Find({ userId: data.userId, collection: 'mapArea' });
++  return { userId: data.userId, length: maps.length, userMapList: maps };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// Simple list getters — DB-backed
+-// -----------------------------------------------------------------------
++export const GetUserMapArea = async (data: any) => {
++  const maps = await DB.Find({ userId: data.userId, collection: 'mapArea' });
++  return { userId: data.userId, length: maps.length, userMapAreaList: maps };
++};
+ 
+-const emptyList = (key: string) => async (data: any) => ({
+-  userId: data.userId,
+-  length: 0,
+-  [key]: [],
++export const GetUserMapAreaCondition = async (data: any) => ({
++  userId: data.userId, length: 0, userMapAreaConditionList: [],
+ });
+ 
+-export const GetUserCharacterSelect = emptyList('userCharacterList');
++// ── Duel — artemis: GetUserDuelApi → GetUserDuel ──────────────────────────────
+ 
+-export const GetUserItem = async (data: any) => {
+-  const items = await DB.Find<Item>({ userId: data.userId });
+-  return { userId: data.userId, length: items.length, userItemList: items };
++export const GetUserDuel = async (data: any) => {
++  const duels = await DB.Find({ userId: data.userId, collection: 'duel' });
++  return { userId: data.userId, length: duels.length, userDuelList: duels };
+ };
+ 
+-// GetUserItemEx uses the same item collection, just an extended alias
+-export const GetUserItemEx = async (data: any) => {
+-  const items = await DB.Find<Item>({ userId: data.userId });
+-  return { userId: data.userId, length: items.length, userItemList: items };
+-};
++export const GetUserDuelList = GetUserDuel; // old alias
+ 
+-export const GetUserMusicItem = async (data: any) => {
+-  const records = await DB.Find<MusicRecord>({ userId: data.userId });
+-  return { userId: data.userId, length: records.length, userMusicItemList: records };
+-};
++// ── Team — artemis: GetUserTeamApi → GetUserTeam ─────────────────────────────
++// No team system on private server — return a safe default that doesn't crash the game
+ 
+-export const GetUserCharacter = async (data: any) => {
+-  const chars = await DB.Find<Character>({ userId: data.userId });
+-  return { userId: data.userId, length: chars.length, userCharacterList: chars };
++export const GetUserTeam = async (data: any) => {
++  return { userId: data.userId, teamId: 0 };
+ };
+ 
+-// GetUserCharacter alias used by Card Machine (CM) flow
+-export const CMGetUserCharacter = GetUserCharacter;
++export const GetTeamCourseSetting = async (data: any) => ({
++  userId: data.userId, length: 0, nextIndex: -1, teamCourseSettingList: [],
++});
+ 
+-export const GetUserFavoriteItem = async (data: any) => {
+-  const favs = await DB.Find({ userId: data.userId, collection: 'favorite' });
+-  return { userId: data.userId, length: favs.length, userFavoriteItemList: favs };
+-};
++export const GetTeamCourseRule = async (data: any) => ({
++  userId: data.userId, length: 0, nextIndex: -1, teamCourseRuleList: [],
++});
+ 
+-export const GetUserFavoriteMusic = async (data: any) => {
+-  const favs = await DB.Find({ userId: data.userId, collection: 'favoriteMusic' });
+-  return { userId: data.userId, length: favs.length, userFavoriteMusicList: favs };
+-};
++// ── Social — empty stubs safe to return ─────────────────────────────────────
+ 
+-export const GetUserGameOption = async (data: any) => {
+-  const opt = await DB.FindOne({ userId: data.userId, collection: 'gameOption' });
+-  return { userId: data.userId, userGameOption: opt ?? {} };
+-};
++export const GetUserRecentPlayer = async (data: any) => ({
++  userId: data.userId, length: 0, userRecentPlayerList: [],
++});
+ 
+-export const GetUserGameOptionEx = async (data: any) => {
+-  const opt = await DB.FindOne({ userId: data.userId, collection: 'gameOptionEx' });
+-  return { userId: data.userId, userGameOptionEx: opt ?? {} };
+-};
++export const GetUserRegion = async (data: any) => ({
++  userId: data.userId, length: 0, userRegionList: [],
++});
+ 
+-export const GetUserActivity = async (data: any) => {
+-  const activities = await DB.Find({ userId: data.userId, collection: 'activity' });
+-  return { userId: data.userId, length: activities.length, userActivityList: activities };
+-};
++export const GetUserRivalData = async (data: any) => ({
++  userId: data.userId, userRivalData: {},
++});
+ 
+-export const GetUserCourse = async (data: any) => {
+-  const courses = await DB.Find({ userId: data.userId, collection: 'course' });
+-  return { userId: data.userId, length: courses.length, userCourseList: courses };
+-};
++export const GetUserRivalMusic = async (data: any) => ({
++  userId: data.userId, rivalId: data.rivalId, length: 0, nextIndex: -1, userRivalMusicList: [],
++});
+ 
+-export const GetUserPlaylog = async (data: any) => {
+-  const logs = await DB.Find({ userId: data.userId, collection: 'playlog' });
+-  return { userId: data.userId, length: logs.length, userPlaylogList: logs };
+-};
++// ── Net battle (LUMINOUS+) ────────────────────────────────────────────────────
+ 
+-// -----------------------------------------------------------------------
+-// Rating lists — DB-backed where applicable, empty stubs where not needed
+-// -----------------------------------------------------------------------
++export const GetUserNetBattleData = async (data: any) => ({
++  userId: data.userId,
++  userNetBattleData: { recentNBSelectMusicList: [] },
++});
+ 
+-export const GetUserRecentRating = emptyList('userRecentRatingList');
+-export const GetUserBestRating = emptyList('userBestRatingList');
+-export const GetUserRatinglog = emptyList('userRatinglogList');
+-export const GetUserCharge = emptyList('userChargeList');
+-export const GetUserMapArea = emptyList('userMapAreaList');
++export const GetUserNetBattleRankingInfo = async (data: any) => ({
++  userId: data.userId, userNetBattleData: {},
++});
+ 
+-// -----------------------------------------------------------------------
+-// Login bonus — must return a valid structure or the game shows an error
+-// on the attract/login screen and can softlock waiting for the response.
+-// Returning an empty list with isRewardEnd=true skips the bonus flow safely.
+-// -----------------------------------------------------------------------
++// ── C-Mission (LUMINOUS) ──────────────────────────────────────────────────────
+ 
+-export const GetUserLoginBonus = async (data: any) => {
+-  const bonuses = await DB.Find({ userId: data.userId, collection: 'loginBonus' });
+-  return {
+-    userId: data.userId,
+-    length: bonuses.length,
+-    userLoginBonusList: bonuses,
+-  };
+-};
++export const GetUserCMission = async (data: any) => {
++  const userId     = data.userId;
++  const missionId  = data.missionId;
++  const mission    = await DB.FindOne({ userId, collection: 'cmission', missionId }) as any;
++  const progresses = await DB.Find({ userId, collection: 'cmissionProgress', missionId });
+ 
+-export const GetUserLoginBonusInfo = async (data: any) => {
+   return {
+-    userId: data.userId,
+-    length: 0,
+-    userLoginBonusInfoList: [],
++    userId, missionId,
++    point: mission?.point ?? 0,
++    userCMissionProgressList: progresses.map((p: any) => ({
++      order: p.order, stage: p.stage, progress: p.progress,
++    })),
+   };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// Gacha — return empty pool; no gacha functionality on private servers
+-// -----------------------------------------------------------------------
++export const GetUserCMissionProgress = async (data: any) => ({
++  userId: data.userId, length: 0, userCMissionProgressList: [],
++});
+ 
+-export const GetUserGacha = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    length: 0,
+-    userGachaList: [],
+-  };
++export const GetUserCMissionList = async (data: any) => ({
++  userId: data.userId, length: 0, userCMissionList: [],
++});
++
++// ── Unlock Challenge (VERSE) ──────────────────────────────────────────────────
++
++export const GetUserUC = async (data: any) => {
++  const challenges = await DB.Find({ userId: data.userId, collection: 'unlockChallenge' });
++  return { userId: data.userId, userUnlockChallengeList: challenges };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// Map area and unlock conditions
+-// -----------------------------------------------------------------------
++export const GetUserUCProgress = async (data: any) => ({
++  userId: data.userId, length: 0, userUCProgressList: [],
++});
+ 
+-export const GetUserMapAreaCondition = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    length: 0,
+-    userMapAreaConditionList: [],
+-  };
++export const GetUserUnlockItem = async (data: any) => ({
++  userId: data.userId, length: 0, userUnlockItemList: [],
++});
++
++// ── Linked VERSE (X-VERSE) ───────────────────────────────────────────────────
++
++export const GetUserLV = async (data: any) => {
++  const rows = await DB.Find({ userId: data.userId, collection: 'linkedVerse' });
++  return { userId: data.userId, userLinkedVerseList: rows };
+ };
+ 
+-export const GetUserUnlockItem = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    length: 0,
+-    userUnlockItemList: [],
+-  };
++// ── Recommendations (VERSE) ───────────────────────────────────────────────────
++
++export const GetUserRecMusic = async (data: any) => ({
++  length: 0, userRecMusicList: [],
++});
++
++export const GetUserRecRating = async (data: any) => ({
++  length: 0, userRecRatingList: [],
++});
++
++// ── Characters / items ───────────────────────────────────────────────────────
++
++export const GetUserCharacterSelect = async (data: any) => ({
++  userId: data.userId, length: 0, nextIndex: -1, userCharacterList: [],
++});
++
++export const GetUserItem = async (data: any) => {
++  const userId   = data.userId;
++  const nextIdx  = parseInt(data.nextIndex ?? '0');
++  const maxCount = parseInt(data.maxCount ?? '300');
++
++  // artemis: kind = nextIndex // 10000000000, offset = nextIndex % 10000000000
++  const kind    = Math.floor(nextIdx / 10000000000);
++  const offset  = nextIdx % 10000000000;
++
++  const items = await DB.Find<Item>({ userId, itemKind: kind });
++  const page  = items.slice(offset, offset + maxCount);
++  const newNextIdx = items.length > offset + maxCount
++    ? kind * 10000000000 + offset + maxCount
++    : -1;
++
++  return { userId, nextIndex: newNextIdx, itemKind: kind, length: page.length, userItemList: page };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// Duel list — used for the Chunithm Duel feature
+-// -----------------------------------------------------------------------
++export const GetUserItemEx = GetUserItem;
+ 
+-export const GetUserDuelList = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    length: 0,
+-    userDuelList: [],
+-  };
++export const GetUserCharacter = async (data: any) => {
++  const userId   = data.userId;
++  const nextIdx  = parseInt(data.nextIndex ?? '0');
++  const maxCount = parseInt(data.maxCount ?? '300');
++  const chars    = await DB.Find<Character>({ userId });
++  const page     = chars.slice(nextIdx, nextIdx + maxCount);
++  const newNextIdx = chars.length > nextIdx + maxCount ? nextIdx + maxCount : -1;
++  return { userId, length: page.length, nextIndex: newNextIdx, userCharacterList: page };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// Recommend lists — used for song recommendation UI
+-// Empty lists are safe; the game just shows no suggestions.
+-// -----------------------------------------------------------------------
++export const CMGetUserCharacter = GetUserCharacter;
+ 
+-export const GetUserRecommendMusicList = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    length: 0,
+-    userRecommendMusicDetailList: [],
+-  };
++// ── Favorites ─────────────────────────────────────────────────────────────────
++
++export const GetUserFavoriteItem = async (data: any) => {
++  const userId   = data.userId;
++  const nextIdx  = parseInt(data.nextIndex ?? '0');
++  const maxCount = parseInt(data.maxCount ?? '300');
++  const kind     = parseInt(data.kind ?? '0');
++  const favs     = await DB.Find({ userId, collection: 'favorite', kind });
++  const page     = favs.slice(nextIdx, nextIdx + maxCount);
++  const newNextIdx = favs.length > nextIdx + maxCount ? nextIdx + maxCount : -1;
++  return { userId, length: page.length, kind, nextIndex: newNextIdx, userFavoriteItemList: page.map((f: any) => ({ id: f.itemId })) };
+ };
+ 
+-export const GetUserRecommendRateMusicList = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    length: 0,
+-    userRecommendMusicDetailList: [],
+-  };
++export const GetUserFavoriteMusic = async (data: any) => ({
++  userId: data.userId, length: 0, userFavoriteMusicList: [],
++});
++
++// ── Ratings ───────────────────────────────────────────────────────────────────
++
++export const GetUserRecentRating = async (data: any) => {
++  const r = await DB.FindOne({ userId: data.userId, collection: 'recentRating' }) as any;
++  const list = r?.recentRating ?? [];
++  return { userId: data.userId, length: list.length, userRecentRatingList: list };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// MAC detail — hardware identifier info, empty is safe
+-// -----------------------------------------------------------------------
++export const GetUserBestRating   = async (data: any) => ({ userId: data.userId, length: 0, userBestRatingList: [] });
++export const GetUserRatinglog    = async (data: any) => ({ userId: data.userId, length: 0, userRatinglogList: [] });
+ 
+-export const GetUserMacDetail = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    userMacDetailList: [],
+-  };
++// ── Courses / play history ────────────────────────────────────────────────────
++
++export const GetUserCourse = async (data: any) => {
++  const userId   = data.userId;
++  const nextIdx  = parseInt(data.nextIndex ?? '0');
++  const maxCount = parseInt(data.maxCount ?? '300');
++  const courses  = await DB.Find({ userId, collection: 'course' });
++  const page     = courses.slice(nextIdx, nextIdx + maxCount);
++  const newNextIdx = courses.length > nextIdx + maxCount ? nextIdx + maxCount : -1;
++  return { userId, length: page.length, nextIndex: newNextIdx, userCourseList: page };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// C-to-C play — cabinet-to-cabinet local link play status
+-// -----------------------------------------------------------------------
++export const GetUserPlaylog = async (data: any) => {
++  const logs = await DB.Find({ userId: data.userId, collection: 'playlog' });
++  return { userId: data.userId, length: logs.length, nextIndex: -1, userPlaylogList: logs };
++};
+ 
+-export const GetUserCtoCPlay = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    orderBy: 0,
+-    orderCount: 0,
+-    userCtoCPlayList: [],
+-  };
++export const GetUserActivity = async (data: any) => {
++  const activities = await DB.Find({ userId: data.userId, collection: 'activity', kind: data.kind });
++  return { userId: data.userId, length: activities.length, kind: parseInt(data.kind), userActivityList: activities };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// Mission progress — CHUNITHM MISSION system (verse+)
+-// -----------------------------------------------------------------------
++// ── Misc ──────────────────────────────────────────────────────────────────────
+ 
+-export const GetUserCMissionProgress = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    length: 0,
+-    userCMissionProgressList: [],
+-  };
++export const GetUserCharge = async (data: any) => {
++  const charges = await DB.Find({ userId: data.userId, collection: 'charge' });
++  return { userId: data.userId, length: charges.length, userChargeList: charges };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// UC (Ultimate Chain) progress
+-// -----------------------------------------------------------------------
++export const GetUserGacha          = async (data: any) => ({ userId: data.userId, length: 0, userGachaList: [] });
++export const GetUserMacDetail       = async (data: any) => ({ userId: data.userId, userMacDetailList: [] });
++export const GetUserCtoCPlay        = async (data: any) => ({ userId: data.userId, orderBy: 0, orderCount: 0, userCtoCPlayList: [] });
+ 
+-export const GetUserUCProgress = async (data: any) => {
+-  return {
+-    userId: data.userId,
+-    length: 0,
+-    userUCProgressList: [],
+-  };
++// ── Login bonus ───────────────────────────────────────────────────────────────
++
++export const GetUserLoginBonus = async (data: any) => {
++  const bonuses = await DB.Find({ userId: data.userId, collection: 'loginBonus' });
++  return { userId: data.userId, length: bonuses.length, userLoginBonusList: bonuses };
+ };
+ 
+-// -----------------------------------------------------------------------
+-// Card Machine (CM) upserts — used during the physical card print flow.
+-// These must return returnCode 1 or the CM flow will hang.
+-// -----------------------------------------------------------------------
++export const GetUserLoginBonusInfo = async (data: any) => ({
++  userId: data.userId, length: 0, userLoginBonusInfoList: [],
++});
+ 
+-export const CMUpsertUserFavoriteItem = async (data: any) => {
+-  // Persist if possible, otherwise just ack
++// ── UpsertUserAll ─────────────────────────────────────────────────────────────
++
++export const UpsertUserAll = async (data: any) => {
+   const userId = data.userId;
+-  if (data.userFavoriteItem) {
+-    await DB.Upsert(
+-      { userId, collection: 'favorite', itemId: data.userFavoriteItem.itemId },
+-      { $set: { userId, collection: 'favorite', ...data.userFavoriteItem } }
+-    );
++  const upsert = data.upsertUserAll ?? {};
++
++  // Guest play guard (artemis: userId & 0x1000000000001 == 0x1000000000001)
++  if ((BigInt(userId) & BigInt('0x1000000000001')) === BigInt('0x1000000000001')) {
++    return { returnCode: '1' };
+   }
+-  return { returnCode: 1 };
+-};
+ 
+-export const CMUpsertUserGachaTicket = async (data: any) => {
+-  return { returnCode: 1 };
+-};
++  // Profile
++  const updates: Partial<Profile> = { userId };
++  if (upsert.userData?.[0])   Object.assign(updates, upsert.userData[0]);
++  if (upsert.userDataEx?.[0]) Object.assign(updates, upsert.userDataEx[0]);
++  updates.lastPlayDate = new Date().toISOString().replace('T', ' ').split('.')[0] + '.0';
++  await DB.Upsert<Profile>({ userId }, { $set: updates });
+ 
+-export const CMUpsertUserPrint = async (data: any) => {
+-  return {
+-    returnCode: 1,
+-    orderId: data.orderId ?? 1,
+-    serialId: data.serialId ?? 'ASPHYXIA0001',
+-    printState: 1,
+-  };
++  // Game options
++  if (upsert.userGameOption?.[0])
++    await DB.Upsert({ userId, collection: 'gameOption' }, { $set: { userId, collection: 'gameOption', ...upsert.userGameOption[0] } });
++  if (upsert.userGameOptionEx?.[0])
++    await DB.Upsert({ userId, collection: 'gameOptionEx' }, { $set: { userId, collection: 'gameOptionEx', ...upsert.userGameOptionEx[0] } });
++
++  // Recent rating
++  if (upsert.userRecentRatingList)
++    await DB.Upsert({ userId, collection: 'recentRating' }, { $set: { userId, collection: 'recentRating', recentRating: upsert.userRecentRatingList } });
++
++  // Characters
++  if (upsert.userCharacterList)
++    for (const char of upsert.userCharacterList)
++      await DB.Upsert<Character>({ userId, characterId: char.characterId }, { $set: char });
++
++  // Music scores — artemis key is userMusicDetailList (from upsertUserAll)
++  for (const key of ['userMusicDetailList', 'userMusicItemList']) {
++    if (upsert[key])
++      for (const music of upsert[key])
++        await DB.Upsert<MusicRecord>({ userId, musicId: music.musicId, level: music.level }, { $set: music });
++  }
++
++  // Items
++  if (upsert.userItemList)
++    for (const item of upsert.userItemList)
++      await DB.Upsert<Item>({ userId, itemType: item.itemType ?? item.itemKind, itemId: item.itemId }, { $set: item });
++
++  // Maps
++  if (upsert.userMapList)
++    for (const map of upsert.userMapList)
++      await DB.Upsert({ userId, collection: 'mapArea', mapAreaId: map.mapAreaId }, { $set: { userId, collection: 'mapArea', ...map } });
++
++  // Courses
++  if (upsert.userCourseList)
++    for (const course of upsert.userCourseList)
++      await DB.Upsert({ userId, collection: 'course', courseId: course.courseId }, { $set: { userId, collection: 'course', ...course } });
++
++  // Duels
++  if (upsert.userDuelList)
++    for (const duel of upsert.userDuelList)
++      await DB.Upsert({ userId, collection: 'duel', duelId: duel.duelId }, { $set: { userId, collection: 'duel', ...duel } });
++
++  // Activity
++  if (upsert.userActivityList)
++    for (const activity of upsert.userActivityList)
++      await DB.Upsert({ userId, collection: 'activity', kind: activity.kind, id: activity.id }, { $set: { userId, collection: 'activity', ...activity } });
++
++  // Charge
++  if (upsert.userChargeList)
++    for (const charge of upsert.userChargeList)
++      await DB.Upsert({ userId, collection: 'charge', chargeId: charge.chargeId }, { $set: { userId, collection: 'charge', ...charge } });
++
++  // Play log
++  if (upsert.userPlaylogList)
++    for (const log of upsert.userPlaylogList)
++      await DB.Insert({ userId, collection: 'playlog', ...log });
++
++  // Favorites
++  if (upsert.userFavoriteItemList)
++    for (const fav of upsert.userFavoriteItemList)
++      await DB.Upsert({ userId, collection: 'favorite', itemId: fav.id ?? fav.itemId }, { $set: { userId, collection: 'favorite', kind: fav.kind ?? 1, itemId: fav.id ?? fav.itemId } });
++
++  // Favorite music (LUMINOUS PLUS)
++  if (upsert.userFavoriteMusicList)
++    for (const fav of upsert.userFavoriteMusicList)
++      if (fav.musicId !== '-1' && fav.musicId !== -1)
++        await DB.Upsert({ userId, collection: 'favoriteMusic', musicId: fav.musicId }, { $set: { userId, collection: 'favoriteMusic', musicId: fav.musicId, orderId: fav.orderId } });
++
++  // Map area
++  if (upsert.userMapAreaList)
++    for (const ma of upsert.userMapAreaList)
++      await DB.Upsert({ userId, collection: 'mapArea', mapAreaId: ma.mapAreaId }, { $set: { userId, collection: 'mapArea', ...ma } });
++
++  // Rating lists
++  for (const ratingType of ['userRatingBaseList', 'userRatingBaseHotList', 'userRatingBaseNextList'])
++    if (upsert[ratingType])
++      await DB.Upsert({ userId, collection: ratingType }, { $set: { userId, collection: ratingType, data: upsert[ratingType] } });
++
++  // C-Missions (LUMINOUS)
++  if (upsert.userCMissionList)
++    for (const cm of upsert.userCMissionList) {
++      await DB.Upsert({ userId, collection: 'cmission', missionId: cm.missionId }, { $set: { userId, collection: 'cmission', missionId: cm.missionId, point: cm.point } });
++      if (cm.userCMissionProgressList)
++        for (const prog of cm.userCMissionProgressList)
++          await DB.Upsert({ userId, collection: 'cmissionProgress', missionId: cm.missionId, order: prog.order }, { $set: { userId, collection: 'cmissionProgress', missionId: cm.missionId, ...prog } });
++    }
++
++  // Net battle (LUMINOUS)
++  if (upsert.userNetBattleData) {
++    const nb = upsert.userNetBattleData[0] ?? upsert.userNetBattleData;
++    if (nb) await DB.Upsert({ userId, collection: 'netBattle' }, { $set: { userId, collection: 'netBattle', ...nb } });
++  }
++
++  // Login bonus watched
++  if (upsert.userLoginBonusList)
++    for (const lb of upsert.userLoginBonusList)
++      await DB.Upsert({ userId, collection: 'loginBonus', presetId: lb.presetId }, { $set: { userId, collection: 'loginBonus', presetId: lb.presetId, isWatched: true } });
++
++  // Unlock challenges (VERSE)
++  if (upsert.userUnlockChallengeList)
++    for (const uc of upsert.userUnlockChallengeList)
++      await DB.Upsert({ userId, collection: 'unlockChallenge', unlockChallengeId: uc.unlockChallengeId }, { $set: { userId, collection: 'unlockChallenge', ...uc } });
++
++  // Linked VERSE (X-VERSE)
++  if (upsert.userLinkedVerseList)
++    for (const lv of upsert.userLinkedVerseList)
++      await DB.Upsert({ userId, collection: 'linkedVerse', linkedVerseId: lv.linkedVerseId }, { $set: { userId, collection: 'linkedVerse', ...lv } });
++
++  return { returnCode: '1' };
+ };
+ 
+-export const CMUpsertUserPrintSubData = async (data: any) => {
+-  return { returnCode: 1 };
++// ── Upsert chargelog (artemis: UpsertUserChargelogApi) ────────────────────────
++
++export const UpsertUserChargelog = async (data: any) => {
++  const userId = data.userId;
++  const charge = data.userCharge;
++  if (charge)
++    await DB.Upsert({ userId, collection: 'charge', chargeId: charge.chargeId }, { $set: { userId, collection: 'charge', ...charge } });
++  return { returnCode: '1' };
+ };
+ 
+-export const CMUpsertUserPrintCancel = async (data: any) => {
++// ── CM (Card Machine) upserts ─────────────────────────────────────────────────
++
++export const CMUpsertUserFavoriteItem = async (data: any) => {
++  if (data.userFavoriteItem) {
++    const fav = data.userFavoriteItem;
++    await DB.Upsert({ userId: data.userId, collection: 'favorite', itemId: fav.itemId }, { $set: { userId: data.userId, collection: 'favorite', ...fav } });
++  }
+   return { returnCode: 1 };
+-};
+\ No newline at end of file
++};
++export const CMUpsertUserGachaTicket  = async (data: any) => ({ returnCode: 1 });
++export const CMUpsertUserPrint        = async (data: any) => ({ returnCode: 1, orderId: data.orderId ?? 1, serialId: data.serialId ?? 'ASPHYXIA0001', printState: 1 });
++export const CMUpsertUserPrintSubData = async (data: any) => ({ returnCode: 1 });
++export const CMUpsertUserPrintCancel  = async (data: any) => ({ returnCode: 1 });
+diff --git a/index.ts b/index.ts
+index 225deb0..dc1c7db 100644
+--- a/index.ts
++++ b/index.ts
+@@ -3,15 +3,9 @@ import * as profiles from './handlers/profiles';
+ 
+ /**
+  * Chunithm X-VERSE-X Plugin for Asphyxia CORE
+- * 
++ *
+  * Ported/Authored by: Fireable
+  * Special thanks to: Asphyxia Team, Artemis Devs
+- * 
+- * Features:
+- * - 1:1 ARTEMiS data support
+- * - Full score, item, and character persistence
+- * - Integrated Profile WebUI
+- * - AES-CBC encryption/decryption handling
+  */
+ export const register = async () => {
+   R.GameCode('SDBT');
+@@ -20,47 +14,120 @@ export const register = async () => {
+   R.GameCode('SDHJ');
+ 
+   R.Contributor('Fireable');
+-  R.Config('unlock_all_songs', {
+-    type: 'boolean',
+-    default: true,
+-    desc: 'Unlocks all songs for all players.',
+-  });
+-  R.Config('unlock_all_items', {
+-    type: 'boolean',
+-    default: false,
+-    desc: 'Unlocks all system items and characters.',
+-  });
+-  R.Config('infinite_tickets', {
+-    type: 'boolean',
+-    default: true,
+-    desc: 'Provides infinite event/map tickets.',
+-  });
++  R.Config('unlock_all_songs', { type: 'boolean', default: true,  desc: 'Unlocks all songs for all players.' });
++  R.Config('unlock_all_items',  { type: 'boolean', default: false, desc: 'Unlocks all system items and characters.' });
++  R.Config('infinite_tickets',  { type: 'boolean', default: true,  desc: 'Provides infinite event/map tickets.' });
+ 
+-  // --- SEGA Metadata Registration ---
++  // ── SEGA Metadata ────────────────────────────────────────────────────────
++  // Method names must EXACTLY match what the game hashes.
++  // Derived from artemis: inflection.camelize(handle_X_api_request)[6:-7] + "Api"
++  // Any name mismatch means the PBKDF2 hash won't resolve and the endpoint is silently dropped.
+   R.SegaMethodNames([
++    // game / server meta
+     'GetGameSetting', 'GetGameEvent', 'GetGameMessage', 'GetGameCharge',
+     'GetGameGachaCardList', 'GetGameMapAreaCondition', 'GetGameCourseLevel',
+-    'GetGameRankingCount', 'GetGameIdlist', 'GameLogin', 'GameLogout', 'GetUserPreview',
+-    'GetUserData', 'GetUserDataEx', 'GetUserCharacterSelect', 'GetUserItem',
+-    'GetUserItemEx', 'GetUserCharacter', 'GetUserGameOption', 'GetUserGameOptionEx',
++    'GetGameRankingApi',    // artemis: handle_get_game_ranking_api_request
++    'GetGameSaleApi',       // artemis: handle_get_game_sale_api_request
++    'GetGameIdlist',
++    'GetGameUCConditionApi',          // VERSE: unlock challenge conditions
++    'GetGameLVConditionOpenApi',      // X-VERSE: linked verse open conditions
++    'GetGameLVConditionUnlockApi',    // X-VERSE: linked verse unlock conditions
++
++    // session
++    'GameLogin', 'GameLogout',
++
++    // user profile
++    'GetUserPreview',
++    'GetUserData', 'GetUserDataEx',
++    'GetUserOptionApi',   // artemis: handle_get_user_option_api_request → userGameOption
++    'GetUserOptionExApi', // artemis: handle_get_user_option_ex_api_request → userGameOptionEx
++
++    // scores / music
++    'GetUserMusicApi',    // artemis: handle_get_user_music_api_request → userMusicList (grouped)
++
++    // ratings
+     'GetUserRecentRating', 'GetUserBestRating', 'GetUserRatinglog',
+-    'GetUserCourse', 'GetUserPlaylog', 'GetUserMusicItem', 'GetUserFavoriteItem',
+-    'GetUserActivity', 'GetUserCharge', 'GetUserGacha', 'GetUserMacDetail',
+-    'GetUserLoginBonus', 'GetUserLoginBonusInfo', 'GetUserDuelList',
+-    'GetUserUnlockItem', 'GetUserCtoCPlay', 'GetUserMapArea', 'UpsertUserAll',
+-    'BeginMatching', 'EndMatching', 'GetMatchingState', 'CMGetUserCharacter',
+-    'CMUpsertUserFavoriteItem', 'CMUpsertUserGachaTicket', 'CMUpsertUserPrintSubData',
+-    'CMUpsertUserPrint', 'CMUpsertUserPrintCancel', 'CMGetUserPreview',
+-    'GetUserRecommendMusicList', 'GetUserRecommendRateMusicList',
+-    'GetUserCMissionProgress', 'GetUserFavoriteMusic', 'GetUserMapAreaCondition',
+-    'GetUserUCProgress', 'UpsertClientTestmode', 'UpsertClientBookkeeping',
+-    'UpsertClientDevelop', 'UpsertClientError', 'UpsertClientSetting',
+-    'UpsertClientUpload', 'Ping',
++
++    // characters / items
++    'GetUserCharacterSelect',
++    'GetUserItem', 'GetUserItemEx',
++    'GetUserCharacter',
++
++    // maps / courses
++    'GetUserMapApi',      // artemis: handle_get_user_map_api_request → userMapList
++    'GetUserMapArea', 'GetUserMapAreaCondition',
++    'GetUserCourse',
++
++    // activities / charges
++    'GetUserActivity', 'GetUserCharge',
++
++    // social
++    'GetUserTeamApi',           // artemis: handle_get_user_team_api_request
++    'GetTeamCourseSettingApi',  // artemis: handle_get_team_course_setting_api_request
++    'GetTeamCourseRuleApi',     // artemis: handle_get_team_course_rule_api_request
++    'GetUserRecentPlayerApi',   // artemis: handle_get_user_recent_player_api_request
++    'GetUserRegionApi',         // artemis: handle_get_user_region_api_request
++    'GetUserRivalDataApi',      // artemis: handle_get_user_rival_data_api_request
++    'GetUserRivalMusicApi',     // artemis: handle_get_user_rival_music_api_request
++
++    // duels / favorites
++    'GetUserDuelApi',         // artemis: handle_get_user_duel_api_request → userDuelList
++    'GetUserFavoriteItem', 'GetUserFavoriteMusic',
++    'GetUserUnlockItem',
++
++    // gacha / billing
++    'GetUserGacha',
++    'GetUserMacDetail',
++
++    // login bonus
++    'GetUserLoginBonus', 'GetUserLoginBonusInfo',
++
++    // play history
++    'GetUserPlaylog',
++
++    // CtoC / UC Progress
++    'GetUserCtoCPlay',
++    'GetUserUCProgressApi',   // old name kept for compat
++
++    // net battle (LUMINOUS+)
++    'GetUserNetBattleDataApi',          // artemis: handle_get_user_net_battle_data_api_request
++    'GetUserNetBattleRankingInfoApi',   // artemis: handle_get_user_net_battle_ranking_info_api_request
++
++    // C-Mission (LUMINOUS)
++    'GetUserCMissionApi',               // artemis: handle_get_user_c_mission_api_request
++    'GetUserCMissionProgress',          // older name used in some versions
++    'GetUserCMissionListApi',           // list variant
++
++    // Unlock Challenge (VERSE)
++    'GetUserUCApi',                     // artemis: handle_get_user_u_c_api_request
++
++    // Recommendations (VERSE)
++    'GetUserRecMusicApi',               // artemis: handle_get_user_rec_music_api_request
++    'GetUserRecRatingApi',              // artemis: handle_get_user_rec_rating_api_request
++
++    // Linked VERSE (X-VERSE)
++    'GetUserLVApi',                     // artemis: handle_get_user_l_v_api_request
++
++    // upsert
++    'UpsertUserAll',
++    'UpsertUserChargelogApi',           // artemis: handle_upsert_user_chargelog_api_request
++    'UpsertClientTestmode', 'UpsertClientBookkeeping', 'UpsertClientDevelop',
++    'UpsertClientError', 'UpsertClientSetting', 'UpsertClientUpload',
++
++    // matching
++    'BeginMatching', 'EndMatching', 'GetMatchingState',
++
++    // card machine
++    'CMGetUserCharacter', 'CMGetUserPreview',
++    'CMUpsertUserFavoriteItem', 'CMUpsertUserGachaTicket',
++    'CMUpsertUserPrintSubData', 'CMUpsertUserPrint', 'CMUpsertUserPrintCancel',
++
++    'Ping',
+   ]);
+ 
+   R.SegaIterCounts({
+-    '9': 67, '10': 44, '11': 54, '12': 25, '13': 70, '14': 36,
+-    '15': 8, '16': 56, '17': 42, '18': 14,
++    '9':  67, '10': 44, '11': 54, '12': 25, '13': 70, '14': 36,
++    '15': 8,  '16': 56, '17': 42, '18': 14,
+   });
+ 
+   R.SegaVersionMap((gameCode: string, version: number) => {
+@@ -114,17 +181,17 @@ export const register = async () => {
+   });
+ };
+ 
+-// Generic SEGA dispatcher used by SegaRouter
+ export const handleSega = async (gameCode: string, method: string, data: any) => {
++  // Strip "Api" suffix — game sends "GetUserMusicApi", we store handler as "GetUserMusic"
++  // Also strip legacy "Api" variants
+   const cleanMethod = method.replace(/Api$/, '');
+ 
+-  // Try profiles first, then common
+   const handler = (profiles as any)[cleanMethod] || (common as any)[cleanMethod];
+ 
+   if (typeof handler === 'function') {
+     return await handler(data);
+   }
+ 
+-  console.warn(`[Chunithm] Unhandled method: ${method}`);
++  console.warn(`[Chunithm] Unhandled method: ${method} (cleaned: ${cleanMethod})`);
+   return { returnCode: 1 };
+ };
+diff --git a/webui/profile.pug b/webui/profile.pug
+deleted file mode 100644
+index e0daa59..0000000
+--- a/webui/profile.pug
++++ /dev/null
+@@ -1,67 +0,0 @@
+-//DATA//
+-  profile: DB.FindOne({ userId })
+-  songs: DB.Find({ userId, collection: 'music' })
+-  chars: DB.Find({ userId, collection: 'character' })
+-
+--
+-  const p = profile || { userName: 'Unknown', level: 1, playerRating: 0 };
+-
+-div
+-  .card
+-    .card-header
+-      p.card-header-title
+-        span.icon
+-          i.mdi.mdi-account
+-        | Chunithm Profile: #{p.userName}
+-    .card-content
+-      .columns
+-        .column
+-          strong Level: 
+-          | #{p.level}
+-        .column
+-          strong Rating: 
+-          | #{p.playerRating / 100}
+-        .column
+-          strong Play Count: 
+-          | #{p.playCount || 0}
+-      
+-  .card
+-    .card-header
+-      p.card-header-title
+-        span.icon
+-          i.mdi.mdi-music
+-        | Recent Scores
+-    .card-content
+-      table.table.is-fullwidth.is-striped
+-        thead
+-          tr
+-            th Music ID
+-            th Level
+-            th Score
+-            th Grade
+-            th Clear
+-        tbody
+-          each s in songs
+-            tr
+-              td #{s.musicId}
+-              td #{s.level}
+-              td #{s.scoreMax}
+-              td #{s.grade}
+-              td #{s.clearStatus}
+-
+-  if chars && chars.length > 0
+-    .card
+-        .card-header
+-            p.card-header-title
+-                span.icon
+-                    i.mdi.mdi-account-multiple
+-                | Characters
+-        .card-content
+-            .columns.is-multiline
+-                each c in chars
+-                    .column.is-one-quarter
+-                        .box
+-                            p
+-                                strong ID: #{c.characterId}
+-                            p Level: #{c.level}
+-                            progress.progress.is-small.is-primary(value=c.exp max=100)
+diff --git a/webui/profile_main.pug b/webui/profile_main.pug
+new file mode 100644
+index 0000000..5700ebf
+--- /dev/null
++++ b/webui/profile_main.pug
+@@ -0,0 +1,172 @@
++//DATA//
++  profile: DB.FindOne({ __refid: refid })
++  songs: DB.FindOne({ __refid: refid }).then(p => p ? DB.Find({ userId: p.userId, collection: 'music' }) : [])
++  chars: DB.FindOne({ __refid: refid }).then(p => p ? DB.Find({ userId: p.userId, collection: 'character' }) : [])
++
++-
++  const p = profile || { userName: 'PLAYER', level: 1, playerRating: 0, playCount: 0 };
++
++  const GRADES = ['D','C','B','BB','BBB','A','AA','AAA','S','SA','SS','SSA','SSS','SSS+'];
++  const gradeLabel = (g) => GRADES[g] != null ? GRADES[g] : '?';
++
++  const CLEARS = {
++    0: 'Failed', 1: 'Clear', 2: 'Full Combo',
++    3: 'All Justice', 4: 'All Justice Critical'
++  };
++  const clearLabel  = (c) => CLEARS[c] || 'Unknown';
++
++  const CLEAR_TAG = {
++    0: 'is-danger', 1: 'is-info', 2: 'is-success',
++    3: 'is-warning', 4: 'is-primary'
++  };
++  const clearTag = (c) => CLEAR_TAG[c] || '';
++
++  const DIFF_LABEL = { 0:'BAS', 1:'ADV', 2:'EXP', 3:'MAS', 4:'ULT', 5:'WE' };
++  const DIFF_TAG   = { 0:'is-success', 1:'is-warning', 2:'is-danger', 3:'is-primary', 4:'is-dark', 5:'is-info' };
++  const diffLabel  = (d) => DIFF_LABEL[d] != null ? DIFF_LABEL[d] : d;
++  const diffTag    = (d) => DIFF_TAG[d] || '';
++
++  const fmt  = (n) => (n || 0).toLocaleString();
++  const rat  = (r) => r ? (r / 100).toFixed(2) : '0.00';
++
++  const safeSongs = songs || [];
++  const safeChars = chars || [];
++
++  const topSongs = safeSongs.slice().sort((a,b) => (b.scoreMax||0)-(a.scoreMax||0)).slice(0,50);
++  const topChars = safeChars.slice().sort((a,b) => (b.level||0)-(a.level||0));
++
++div
++  //- ── Profile Header ─────────────────────────────────────────────────
++  .card.mb-4
++    .card-header
++      p.card-header-title
++        span.icon
++          i.mdi.mdi-account
++        | #{p.userName || 'PLAYER'}
++        if p.reincarnationNum > 0
++          span.tag.is-warning.ml-2 ✦#{p.reincarnationNum}
++    .card-content
++      .columns.is-multiline
++        .column.is-narrow
++          .has-text-centered
++            p.heading Level
++            p.title.is-4 #{p.level || 1}
++        .column.is-narrow
++          .has-text-centered
++            p.heading Rating
++            p.title.is-4 #{rat(p.playerRating)}
++        .column.is-narrow
++          .has-text-centered
++            p.heading Best
++            p.title.is-5.has-text-grey #{rat(p.highestRating)}
++        .column.is-narrow
++          .has-text-centered
++            p.heading Plays
++            p.title.is-4 #{p.playCount || 0}
++        if p.trophyId
++          .column.is-narrow
++            .has-text-centered
++              p.heading Trophy
++              p.title.is-5 #{p.trophyId}
++        if p.nameplateId
++          .column.is-narrow
++            .has-text-centered
++              p.heading Nameplate
++              p.title.is-5 #{p.nameplateId}
++      if p.lastPlayDate
++        p.has-text-grey.is-size-7 Last played: #{p.lastPlayDate}
++
++  //- ── Score Summary ───────────────────────────────────────────────────
++  if safeSongs.length > 0
++    .card.mb-4
++      .card-header
++        p.card-header-title
++          span.icon
++            i.mdi.mdi-chart-bar
++          | Score Summary
++      .card-content
++        .columns.is-multiline
++          .column.is-narrow
++            .has-text-centered
++              p.heading Scored
++              p.title.is-4 #{safeSongs.length}
++          .column.is-narrow
++            .has-text-centered
++              p.heading Full Combo
++              p.title.is-4 #{safeSongs.filter(s=>s.isFullCombo).length}
++          .column.is-narrow
++            .has-text-centered
++              p.heading All Justice
++              p.title.is-4 #{safeSongs.filter(s=>s.isAllJustice).length}
++          .column.is-narrow
++            .has-text-centered
++              p.heading SSS+
++              p.title.is-4 #{safeSongs.filter(s=>s.grade>=13).length}
++
++  //- ── Best Scores Table ───────────────────────────────────────────────
++  .card.mb-4
++    .card-header
++      p.card-header-title
++        span.icon
++          i.mdi.mdi-music
++        | Best Scores
++        if safeSongs.length > 0
++          span.tag.is-light.ml-2 Top #{topSongs.length} / #{safeSongs.length}
++    .card-content
++      if safeSongs.length === 0
++        p.has-text-grey No scores saved yet.
++      else
++        .table-container
++          table.table.is-fullwidth.is-striped.is-hoverable.is-narrow
++            thead
++              tr
++                th Music ID
++                th Diff
++                th Score
++                th Grade
++                th Clear
++                th FC
++                th AJ
++            tbody
++              each s in topSongs
++                tr
++                  td #{s.musicId}
++                  td
++                    span.tag(class=diffTag(s.level)) #{diffLabel(s.level)}
++                  td
++                    strong #{fmt(s.scoreMax)}
++                  td
++                    span.tag.is-light #{gradeLabel(s.grade)}
++                  td
++                    span.tag(class=clearTag(s.clearStatus)) #{clearLabel(s.clearStatus)}
++                  td
++                    if s.isFullCombo
++                      span.icon.has-text-success ✔
++                  td
++                    if s.isAllJustice
++                      span.icon.has-text-warning ★
++
++  //- ── Characters ─────────────────────────────────────────────────────
++  if safeChars.length > 0
++    .card.mb-4
++      .card-header
++        p.card-header-title
++          span.icon
++            i.mdi.mdi-account-multiple
++          | Characters (#{safeChars.length})
++      .card-content
++        .columns.is-multiline
++          each c in topChars
++            .column.is-one-quarter-desktop.is-half-tablet
++              .box.p-3
++                .level.is-mobile
++                  .level-left
++                    p.has-text-weight-bold ID #{c.characterId}
++                  .level-right
++                    span.tag.is-info Lv #{c.level}
++                progress.progress.is-small.is-primary(
++                  value=c.exp max=100
++                  title=`EXP: ${c.exp}`)
++                p.is-size-7.has-text-grey Plays: #{c.playCount || 0}
++                if c.isEnlightenance
++                  span.tag.is-warning.is-light ★ Enlightened

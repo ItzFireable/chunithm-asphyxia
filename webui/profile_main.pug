@@ -1,0 +1,69 @@
+//DATA//
+  profile: DB.FindOne(refid, { collection: 'profile' })
+  scores: DB.Find(refid, { collection: 'music' })
+
+-
+  const p = profile || {};
+  const name = p.userName || 'PLAYER';
+  const level = p.level || 1;
+  const rating = p.playerRating ? (p.playerRating / 100).toFixed(2) : '0.00';
+  const bestRating = p.highestRating ? (p.highestRating / 100).toFixed(2) : '0.00';
+  const plays = p.playCount || 0;
+  const lastPlay = p.lastPlayDate || '';
+
+  const DIFF_LABEL = { 0:'BAS', 1:'ADV', 2:'EXP', 3:'MAS', 4:'ULT', 5:'WE' };
+  const DIFF_TAG   = { 0:'is-success', 1:'is-warning', 2:'is-danger', 3:'is-primary', 4:'is-dark', 5:'is-info' };
+
+div
+  .card.mb-4
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-account
+        | #{name}
+    .card-content
+      .columns.is-multiline
+        .column.is-narrow
+          .has-text-centered
+            p.heading Level
+            p.title.is-4 #{level}
+        .column.is-narrow
+          .has-text-centered
+            p.heading Rating
+            p.title.is-4 #{rating}
+        .column.is-narrow
+          .has-text-centered
+            p.heading Best
+            p.title.is-5 #{bestRating}
+        .column.is-narrow
+          .has-text-centered
+            p.heading Plays
+            p.title.is-4 #{plays}
+      if lastPlay
+        p.has-text-grey.is-size-7 Last played: #{lastPlay}
+
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-music
+        | Scores
+    .card-content
+      if !scores || scores.length === 0
+        p.has-text-grey No scores yet.
+      else
+        table.table.is-fullwidth.is-striped.is-hoverable
+          thead
+            tr
+              th Song ID
+              th Diff
+              th Score
+              th Clear
+          tbody
+            each s in scores
+              tr
+                td #{s.musicId}
+                td
+                  span.tag(class=DIFF_TAG[s.level] || '') #{DIFF_LABEL[s.level] || s.level}
+                td #{(s.scoreMax || 0).toLocaleString()}
+                td #{s.clearStatus || 0}
