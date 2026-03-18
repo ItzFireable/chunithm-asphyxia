@@ -126,7 +126,7 @@ export const register = async () => {
         eventId,
         type,
         name: data.name || `Event ${eventId}`,
-        startDate: '2017-12-05 07:00:00.0',
+        startDate: data.startDate || '2017-12-05 07:00:00.0',
         enabled: true,
       }}
     );
@@ -140,6 +140,17 @@ export const register = async () => {
 
   R.WebUIEvent('chuniDeleteEvent', async (data: any) => {
     await DB.Remove({collection: 'event', eventId: parseInt(data.eventId)});
+  });
+
+  R.WebUIEvent('chuniUpdateProfile', async (data: any) => {
+    if (!data.refid) return;
+    const update: any = {};
+    if (data.userName)    update.userName    = data.userName.substring(0, 8);
+    if (data.trophyId)    update.trophyId    = parseInt(data.trophyId);
+    if (data.nameplateId) update.nameplateId = parseInt(data.nameplateId);
+    if (data.characterId) update.characterId = parseInt(data.characterId);
+    if (Object.keys(update).length > 0)
+      await DB.Update(data.refid, {collection: 'profile'}, {$set: update});
   });
 };
 

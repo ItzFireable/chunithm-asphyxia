@@ -3,7 +3,9 @@ import {MusicRecord} from '../models/music';
 import {Profile} from '../models/profile';
 
 async function getProfile(userId: number) {
-  return await DB.FindOne<Profile>({userId});
+  const refid = await U.GetRefidFromUserId(userId);
+  if (!refid) return null;
+  return await DB.FindOne<Profile>(refid, {collection: 'profile'});
 }
 
 function readWtf8(src: string): string {
@@ -106,12 +108,14 @@ export const GetUserDataEx = async (data: any) => {
 export const CMGetUserData = GetUserData;
 
 export const GetUserOption = async (data: any) => {
-  const opt = await DB.FindOne({userId: data.userId, collection: 'gameOption'}) as any;
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const opt = refid ? await DB.FindOne(refid, {collection: 'gameOption'}) as any : null;
   return {userId: data.userId, userGameOption: opt ?? {}};
 };
 
 export const GetUserOptionEx = async (data: any) => {
-  const opt = await DB.FindOne({userId: data.userId, collection: 'gameOptionEx'}) as any;
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const opt = refid ? await DB.FindOne(refid, {collection: 'gameOptionEx'}) as any : null;
   return {userId: data.userId, userGameOptionEx: opt ?? {}};
 };
 
@@ -123,7 +127,8 @@ export const GetUserMusic = async (data: any) => {
   const nextIdx  = parseInt(data.nextIndex ?? '0');
   const maxCount = parseInt(data.maxCount ?? '300');
 
-  const records = await DB.Find<MusicRecord>({userId});
+  const refid = await U.GetRefidFromUserId(userId);
+  const records = refid ? await DB.Find<MusicRecord>(refid, {collection: 'music'}) : [];
   if (!records || records.length === 0)
     return {userId, length: 0, nextIndex: -1, userMusicList: []};
 
@@ -146,19 +151,22 @@ export const GetUserMusic = async (data: any) => {
 };
 
 export const GetUserMusicItem = async (data: any) => {
-  const records = await DB.Find<MusicRecord>({userId: data.userId});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const records = refid ? await DB.Find<MusicRecord>(refid, {collection: 'music'}) : [];
   return {userId: data.userId, length: records.length, userMusicItemList: records};
 };
 
 export const GetUserMap = async (data: any) => {
-  const maps = await DB.Find({userId: data.userId, collection: 'mapArea'});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const maps = refid ? await DB.Find(refid, {collection: 'mapArea'}) : [];
   return {userId: data.userId, length: maps.length, userMapList: maps};
 };
 
 export const GetUserMapArea = async (data: any) => {
   const userId      = data.userId;
   const requested   = (data.mapAreaIdList ?? []).map((x: any) => parseInt(x.mapAreaId));
-  let maps          = await DB.Find({userId, collection: 'mapArea'});
+  const _rma        = await U.GetRefidFromUserId(userId);
+  let maps          = _rma ? await DB.Find(_rma, {collection: 'mapArea'}) : [];
 
   if (requested.length > 0)
     maps = maps.filter((m: any) => requested.includes(m.mapAreaId));
@@ -170,7 +178,8 @@ export const GetUserMapAreaCondition = async (data: any) =>
     ({userId: data.userId, length: 0, userMapAreaConditionList: []});
 
 export const GetUserDuel = async (data: any) => {
-  const duels = await DB.Find({userId: data.userId, collection: 'duel'});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const duels = refid ? await DB.Find(refid, {collection: 'duel'}) : [];
   return {userId: data.userId, length: duels.length, userDuelList: duels};
 };
 
@@ -219,15 +228,17 @@ export const GetUserNetBattleData = async (data: any) => ({
 });
 
 export const GetUserNetBattleRankingInfo = async (data: any) => {
-  const nb = await DB.FindOne({userId: data.userId, collection: 'netBattle'}) as any;
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const nb = refid ? await DB.FindOne(refid, {collection: 'netBattle'}) as any : null;
   return {userId: data.userId, userNetBattleData: nb ?? {}};
 };
 
 export const GetUserCMission = async (data: any) => {
   const userId     = data.userId;
   const missionId  = data.missionId;
-  const mission    = await DB.FindOne({userId, collection: 'cmission', missionId}) as any;
-  const progresses = await DB.Find({userId, collection: 'cmissionProgress', missionId});
+  const refid      = await U.GetRefidFromUserId(userId);
+  const mission    = refid ? await DB.FindOne(refid, {collection: 'cmission', missionId}) as any : null;
+  const progresses = refid ? await DB.Find(refid, {collection: 'cmissionProgress', missionId}) : [];
 
   return {
     userId,
@@ -248,7 +259,8 @@ export const GetUserCMissionList = async (data: any) =>
     ({userId: data.userId, length: 0, userCMissionList: []});
 
 export const GetUserUC = async (data: any) => {
-  const challenges = await DB.Find({userId: data.userId, collection: 'unlockChallenge'});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const challenges = refid ? await DB.Find(refid, {collection: 'unlockChallenge'}) : [];
   return {userId: data.userId, userUnlockChallengeList: challenges};
 };
 
@@ -259,7 +271,8 @@ export const GetUserUnlockItem = async (data: any) =>
     ({userId: data.userId, length: 0, userUnlockItemList: []});
 
 export const GetUserLV = async (data: any) => {
-  const rows = await DB.Find({userId: data.userId, collection: 'linkedVerse'});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const rows = refid ? await DB.Find(refid, {collection: 'linkedVerse'}) : [];
   return {userId: data.userId, userLinkedVerseList: rows};
 };
 
@@ -279,7 +292,8 @@ export const GetUserItem = async (data: any) => {
   const kind     = Math.floor(nextIdx / 10000000000);
   const offset   = nextIdx % 10000000000;
 
-  const items    = await DB.Find<Item>({userId, itemKind: kind});
+  const refid    = await U.GetRefidFromUserId(userId);
+  const items    = refid ? await DB.Find<Item>(refid, {collection: 'item', itemKind: kind}) : [];
   const page     = items.slice(offset, offset + maxCount);
   const newNextIdx = items.length > offset + maxCount ?
       kind * 10000000000 + offset + maxCount :
@@ -295,7 +309,8 @@ export const GetUserCharacter = async (data: any) => {
   const userId   = data.userId;
   const nextIdx  = parseInt(data.nextIndex ?? '0');
   const maxCount = parseInt(data.maxCount ?? '300');
-  const chars    = await DB.Find<Character>({userId});
+  const refid    = await U.GetRefidFromUserId(userId);
+  const chars    = refid ? await DB.Find<Character>(refid, {collection: 'character'}) : [];
   const page     = chars.slice(nextIdx, nextIdx + maxCount);
   const newNextIdx = chars.length > nextIdx + maxCount ? nextIdx + maxCount : -1;
   return {userId, length: page.length, nextIndex: newNextIdx, userCharacterList: page};
@@ -308,7 +323,8 @@ export const GetUserFavoriteItem = async (data: any) => {
   const nextIdx  = parseInt(data.nextIndex ?? '0');
   const maxCount = parseInt(data.maxCount ?? '300');
   const kind     = parseInt(data.kind ?? '0');
-  const favs     = await DB.Find({userId, collection: 'favorite', kind});
+  const refid    = await U.GetRefidFromUserId(userId);
+  const favs     = refid ? await DB.Find(refid, {collection: 'favorite', kind}) : [];
   const page     = favs.slice(nextIdx, nextIdx + maxCount);
   const newNextIdx = favs.length > nextIdx + maxCount ? nextIdx + maxCount : -1;
   return {
@@ -324,7 +340,8 @@ export const GetUserFavoriteMusic = async (data: any) =>
     ({userId: data.userId, length: 0, userFavoriteMusicList: []});
 
 export const GetUserRecentRating = async (data: any) => {
-  const r = await DB.FindOne({userId: data.userId, collection: 'recentRating'}) as any;
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const r = refid ? await DB.FindOne(refid, {collection: 'recentRating'}) as any : null;
   const list = r?.recentRating ?? [];
   return {userId: data.userId, length: list.length, userRecentRatingList: list};
 };
@@ -338,19 +355,22 @@ export const GetUserCourse = async (data: any) => {
   const userId   = data.userId;
   const nextIdx  = parseInt(data.nextIndex ?? '0');
   const maxCount = parseInt(data.maxCount ?? '300');
-  const courses  = await DB.Find({userId, collection: 'course'});
+  const refid    = await U.GetRefidFromUserId(userId);
+  const courses  = refid ? await DB.Find(refid, {collection: 'course'}) : [];
   const page     = courses.slice(nextIdx, nextIdx + maxCount);
   const newNextIdx = courses.length > nextIdx + maxCount ? nextIdx + maxCount : -1;
   return {userId, length: page.length, nextIndex: newNextIdx, userCourseList: page};
 };
 
 export const GetUserPlaylog = async (data: any) => {
-  const logs = await DB.Find({userId: data.userId, collection: 'playlog'});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const logs = refid ? await DB.Find(refid, {collection: 'playlog'}) : [];
   return {userId: data.userId, length: logs.length, nextIndex: -1, userPlaylogList: logs};
 };
 
 export const GetUserActivity = async (data: any) => {
-  const activities = await DB.Find({userId: data.userId, collection: 'activity', kind: data.kind});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const activities = refid ? await DB.Find(refid, {collection: 'activity', kind: data.kind}) : [];
   return {
     userId: data.userId,
     length: activities.length,
@@ -360,7 +380,8 @@ export const GetUserActivity = async (data: any) => {
 };
 
 export const GetUserCharge = async (data: any) => {
-  const charges = await DB.Find({userId: data.userId, collection: 'charge'});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const charges = refid ? await DB.Find(refid, {collection: 'charge'}) : [];
   return {userId: data.userId, length: charges.length, userChargeList: charges};
 };
 
@@ -372,7 +393,8 @@ export const GetUserCtoCPlay   = async (data: any) =>
     ({userId: data.userId, orderBy: 0, orderCount: 0, userCtoCPlayList: []});
 
 export const GetUserLoginBonus = async (data: any) => {
-  const bonuses = await DB.Find({userId: data.userId, collection: 'loginBonus'});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  const bonuses = refid ? await DB.Find(refid, {collection: 'loginBonus'}) : [];
   return {userId: data.userId, length: bonuses.length, userLoginBonusList: bonuses};
 };
 
@@ -403,111 +425,81 @@ export const UpsertUserAll = async (data: any) => {
   if (upsert.userDataEx?.[0]) Object.assign(updates, upsert.userDataEx[0]);
   updates.lastPlayDate =
       new Date().toISOString().replace('T', ' ').split('.')[0] + '.0';
-  await DB.Upsert<Profile>({userId}, {$set: updates});
+  const refid = await U.GetRefidFromUserId(userId);
+  if (!refid) return {returnCode: '1'};
+  await DB.Upsert<Profile>(refid, {collection: 'profile'}, {$set: updates});
 
   if (upsert.userGameOption?.[0])
-    await DB.Upsert(
-        {userId, collection: 'gameOption'},
-        {$set: {userId, collection: 'gameOption', ...upsert.userGameOption[0]}});
+    await DB.Upsert(refid, {collection: 'gameOption'}, {$set: {userId, collection: 'gameOption', ...upsert.userGameOption[0]}});
   if (upsert.userGameOptionEx?.[0])
-    await DB.Upsert(
-        {userId, collection: 'gameOptionEx'},
-        {$set: {userId, collection: 'gameOptionEx', ...upsert.userGameOptionEx[0]}});
+    await DB.Upsert(refid, {collection: 'gameOptionEx'}, {$set: {userId, collection: 'gameOptionEx', ...upsert.userGameOptionEx[0]}});
 
   if (upsert.userRecentRatingList)
-    await DB.Upsert(
-        {userId, collection: 'recentRating'},
-        {$set: {userId, collection: 'recentRating', recentRating: upsert.userRecentRatingList}});
+    await DB.Upsert(refid, {collection: 'recentRating'}, {$set: {userId, collection: 'recentRating', recentRating: upsert.userRecentRatingList}});
 
   if (upsert.userCharacterList)
     for (const char of upsert.userCharacterList)
-      await DB.Upsert<Character>(
-          {userId, characterId: char.characterId}, {$set: char});
+      await DB.Upsert<Character>(refid, {collection: 'character', characterId: char.characterId}, {$set: {collection: 'character', ...char}});
 
   for (const key of ['userMusicDetailList', 'userMusicItemList'])
     if (upsert[key])
       for (const music of upsert[key])
-        await DB.Upsert<MusicRecord>(
-            {userId, musicId: music.musicId, level: music.level}, {$set: music});
+        await DB.Upsert<MusicRecord>(refid, {collection: 'music', musicId: music.musicId, level: music.level}, {$set: {collection: 'music', ...music}});
 
   if (upsert.userItemList)
     for (const item of upsert.userItemList)
-      await DB.Upsert<Item>(
-          {userId, itemType: item.itemType ?? item.itemKind, itemId: item.itemId},
-          {$set: item});
+      await DB.Upsert<Item>(refid, {collection: 'item', itemType: item.itemType ?? item.itemKind, itemId: item.itemId}, {$set: {collection: 'item', ...item}});
 
   if (upsert.userMapList)
     for (const map of upsert.userMapList)
-      await DB.Upsert(
-          {userId, collection: 'mapArea', mapAreaId: map.mapAreaId},
-          {$set: {userId, collection: 'mapArea', ...map}});
+      await DB.Upsert(refid, {collection: 'mapArea', mapAreaId: map.mapAreaId}, {$set: {userId, collection: 'mapArea', ...map}});
 
   if (upsert.userCourseList)
     for (const course of upsert.userCourseList)
-      await DB.Upsert(
-          {userId, collection: 'course', courseId: course.courseId},
-          {$set: {userId, collection: 'course', ...course}});
+      await DB.Upsert(refid, {collection: 'course', courseId: course.courseId}, {$set: {userId, collection: 'course', ...course}});
 
   if (upsert.userDuelList)
     for (const duel of upsert.userDuelList)
-      await DB.Upsert(
-          {userId, collection: 'duel', duelId: duel.duelId},
-          {$set: {userId, collection: 'duel', ...duel}});
+      await DB.Upsert(refid, {collection: 'duel', duelId: duel.duelId}, {$set: {userId, collection: 'duel', ...duel}});
 
   if (upsert.userActivityList)
     for (const activity of upsert.userActivityList)
-      await DB.Upsert(
-          {userId, collection: 'activity', kind: activity.kind, id: activity.id},
-          {$set: {userId, collection: 'activity', ...activity}});
+      await DB.Upsert(refid, {collection: 'activity', kind: activity.kind, id: activity.id}, {$set: {userId, collection: 'activity', ...activity}});
 
   if (upsert.userChargeList)
     for (const charge of upsert.userChargeList)
-      await DB.Upsert(
-          {userId, collection: 'charge', chargeId: charge.chargeId},
-          {$set: {userId, collection: 'charge', ...charge}});
+      await DB.Upsert(refid, {collection: 'charge', chargeId: charge.chargeId}, {$set: {userId, collection: 'charge', ...charge}});
 
   if (upsert.userPlaylogList)
     for (const log of upsert.userPlaylogList) {
       for (const key of ['playedUserName1', 'playedUserName2', 'playedUserName3'])
         if (log[key]) try { log[key] = readWtf8(log[key]); } catch {}
-      await DB.Insert({userId, collection: 'playlog', ...log});
+      await DB.Insert(refid, {collection: 'playlog', ...log});
     }
 
   if (upsert.userFavoriteItemList)
     for (const fav of upsert.userFavoriteItemList)
-      await DB.Upsert(
-          {userId, collection: 'favorite', itemId: fav.id ?? fav.itemId},
-          {$set: {userId, collection: 'favorite', kind: fav.kind ?? 1, itemId: fav.id ?? fav.itemId}});
+      await DB.Upsert(refid, {collection: 'favorite', itemId: fav.id ?? fav.itemId}, {$set: {userId, collection: 'favorite', kind: fav.kind ?? 1, itemId: fav.id ?? fav.itemId}});
 
   if (upsert.userFavoriteMusicList)
     for (const fav of upsert.userFavoriteMusicList)
       if (fav.musicId !== '-1' && fav.musicId !== -1)
-        await DB.Upsert(
-            {userId, collection: 'favoriteMusic', musicId: fav.musicId},
-            {$set: {userId, collection: 'favoriteMusic', musicId: fav.musicId, orderId: fav.orderId}});
+        await DB.Upsert(refid, {collection: 'favoriteMusic', musicId: fav.musicId}, {$set: {userId, collection: 'favoriteMusic', musicId: fav.musicId, orderId: fav.orderId}});
 
   if (upsert.userMapAreaList)
     for (const ma of upsert.userMapAreaList)
-      await DB.Upsert(
-          {userId, collection: 'mapArea', mapAreaId: ma.mapAreaId},
-          {$set: {userId, collection: 'mapArea', ...ma}});
+      await DB.Upsert(refid, {collection: 'mapArea', mapAreaId: ma.mapAreaId}, {$set: {userId, collection: 'mapArea', ...ma}});
 
   for (const ratingType of ['userRatingBaseList', 'userRatingBaseHotList', 'userRatingBaseNextList'])
     if (upsert[ratingType])
-      await DB.Upsert(
-          {userId, collection: ratingType},
-          {$set: {userId, collection: ratingType, data: upsert[ratingType]}});
+      await DB.Upsert(refid, {collection: ratingType}, {$set: {userId, collection: ratingType, data: upsert[ratingType]}});
 
   if (upsert.userCMissionList)
     for (const cm of upsert.userCMissionList) {
-      await DB.Upsert(
-          {userId, collection: 'cmission', missionId: cm.missionId},
-          {$set: {userId, collection: 'cmission', missionId: cm.missionId, point: cm.point}});
+      await DB.Upsert(refid, {collection: 'cmission', missionId: cm.missionId}, {$set: {userId, collection: 'cmission', missionId: cm.missionId, point: cm.point}});
       if (cm.userCMissionProgressList)
         for (const prog of cm.userCMissionProgressList)
-          await DB.Upsert(
-              {userId, collection: 'cmissionProgress', missionId: cm.missionId, order: prog.order},
-              {$set: {userId, collection: 'cmissionProgress', missionId: cm.missionId, ...prog}});
+          await DB.Upsert(refid, {collection: 'cmissionProgress', missionId: cm.missionId, order: prog.order}, {$set: {userId, collection: 'cmissionProgress', missionId: cm.missionId, ...prog}});
     }
 
   if (upsert.userNetBattleData) {
@@ -516,39 +508,30 @@ export const UpsertUserAll = async (data: any) => {
         upsert.userNetBattleData;
     if (nb) {
       nb.isRankUpChallengeFailed = nb.isRankUpChallengeFailed === 'false' ? false : Boolean(nb.isRankUpChallengeFailed);
-      await DB.Upsert(
-          {userId, collection: 'netBattle'},
-          {$set: {userId, collection: 'netBattle', ...nb}});
+      await DB.Upsert(refid, {collection: 'netBattle'}, {$set: {userId, collection: 'netBattle', ...nb}});
     }
   }
 
   if (upsert.userLoginBonusList)
     for (const lb of upsert.userLoginBonusList)
-      await DB.Upsert(
-          {userId, collection: 'loginBonus', presetId: lb.presetId},
-          {$set: {userId, collection: 'loginBonus', presetId: lb.presetId, isWatched: true}});
+      await DB.Upsert(refid, {collection: 'loginBonus', presetId: lb.presetId}, {$set: {userId, collection: 'loginBonus', presetId: lb.presetId, isWatched: true}});
 
   if (upsert.userUnlockChallengeList)
     for (const uc of upsert.userUnlockChallengeList)
-      await DB.Upsert(
-          {userId, collection: 'unlockChallenge', unlockChallengeId: uc.unlockChallengeId},
-          {$set: {userId, collection: 'unlockChallenge', ...uc}});
+      await DB.Upsert(refid, {collection: 'unlockChallenge', unlockChallengeId: uc.unlockChallengeId}, {$set: {userId, collection: 'unlockChallenge', ...uc}});
 
   if (upsert.userLinkedVerseList)
     for (const lv of upsert.userLinkedVerseList)
-      await DB.Upsert(
-          {userId, collection: 'linkedVerse', linkedVerseId: lv.linkedVerseId},
-          {$set: {userId, collection: 'linkedVerse', ...lv}});
+      await DB.Upsert(refid, {collection: 'linkedVerse', linkedVerseId: lv.linkedVerseId}, {$set: {userId, collection: 'linkedVerse', ...lv}});
 
   return {returnCode: '1'};
 };
 
 export const UpsertUserChargelog = async (data: any) => {
   const charge = data.userCharge;
-  if (charge)
-    await DB.Upsert(
-        {userId: data.userId, collection: 'charge', chargeId: charge.chargeId},
-        {$set: {userId: data.userId, collection: 'charge', ...charge}});
+  const refid = await U.GetRefidFromUserId(data.userId);
+  if (charge && refid)
+    await DB.Upsert(refid, {collection: 'charge', chargeId: charge.chargeId}, {$set: {userId: data.userId, collection: 'charge', ...charge}});
   return {returnCode: '1'};
 };
 

@@ -1,0 +1,49 @@
+//DATA//
+  scores: DB.Find(refid, { collection: 'music' })
+
+-
+  const DIFF_LABEL = { 0:'BAS', 1:'ADV', 2:'EXP', 3:'MAS', 4:'ULT', 5:'WE' };
+  const DIFF_TAG   = { 0:'is-success', 1:'is-warning', 2:'is-danger', 3:'is-primary', 4:'is-dark', 5:'is-info' };
+  const CLEAR      = { 0:'—', 1:'Clear', 2:'Full Combo', 3:'All Justice', 4:'All Justice Critical' };
+  const CLEAR_TAG  = { 0:'', 1:'is-info', 2:'is-success', 3:'is-warning', 4:'is-primary' };
+
+link(rel="stylesheet" href="static/asset/css/datatables.css")
+div
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-music
+        | Scores
+        span.tag.is-dark.ml-2 #{scores ? scores.length : 0}
+    .card-content
+      if !scores || scores.length === 0
+        p.has-text-grey No scores recorded yet.
+      else
+        table.table.is-fullwidth(id="score_table" style="width:100%")
+          thead
+            tr
+              th Song ID
+              th Diff
+              th Score
+              th Grade
+              th Clear
+              th Over Power
+          tbody
+            each s in scores
+              tr
+                td #{s.musicId}
+                td
+                  span.tag(class=DIFF_TAG[s.level] || '') #{DIFF_LABEL[s.level] || s.level}
+                td #{(s.scoreMax || 0).toLocaleString()}
+                td #{s.rank || '—'}
+                td
+                  span.tag(class=CLEAR_TAG[s.clearStatus] || '') #{CLEAR[s.clearStatus] || '—'}
+                td #{s.isFullCombo ? 'FC' : ''}#{s.isAllJustice ? ' AJ' : ''}
+
+div(hidden id='data-pass') !{JSON.stringify(scores)}
+script(src="static/asset/js/datatables.js")
+script.
+  $(document).ready(function() {
+    $('#score_table').DataTable({ order: [[2,'desc']], pageLength: 50 });
+  });

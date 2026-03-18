@@ -1,0 +1,84 @@
+//DATA//
+  recentRating: DB.FindOne(refid, { collection: 'recentRating' })
+  ratingBase: DB.FindOne(refid, { collection: 'userRatingBaseList' })
+  ratingHot: DB.FindOne(refid, { collection: 'userRatingBaseHotList' })
+
+-
+  const recent = (recentRating && recentRating.recentRating) ? recentRating.recentRating : [];
+  const base   = (ratingBase   && ratingBase.data)           ? ratingBase.data           : [];
+  const hot    = (ratingHot    && ratingHot.data)            ? ratingHot.data            : [];
+  const fmt = (r) => r != null ? (r / 100).toFixed(2) : '—';
+
+div
+  .card.mb-4
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-star
+        | Recent Rating (#{recent.length})
+    .card-content
+      if recent.length === 0
+        p.has-text-grey No recent rating data.
+      else
+        table.table.is-fullwidth.is-striped.is-size-7
+          thead
+            tr
+              th Song ID
+              th Difficulty
+              th Rating
+          tbody
+            each r in recent
+              tr
+                td #{r.musicId}
+                td #{r.difficultId != null ? r.difficultId : '—'}
+                td #{fmt(r.romVersion ? null : r.rating)}
+
+  .card.mb-4
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-fire
+        | Best 30
+    .card-content
+      if base.length === 0
+        p.has-text-grey No best rating data.
+      else
+        table.table.is-fullwidth.is-striped.is-size-7
+          thead
+            tr
+              th Song ID
+              th Difficulty
+              th Score
+              th Rating
+          tbody
+            each r in base
+              tr
+                td #{r.musicId}
+                td #{r.difficultId != null ? r.difficultId : '—'}
+                td #{r.score != null ? r.score.toLocaleString() : '—'}
+                td #{fmt(r.rating)}
+
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-lightning-bolt
+        | New Charts (Hot)
+    .card-content
+      if hot.length === 0
+        p.has-text-grey No hot rating data.
+      else
+        table.table.is-fullwidth.is-striped.is-size-7
+          thead
+            tr
+              th Song ID
+              th Difficulty
+              th Score
+              th Rating
+          tbody
+            each r in hot
+              tr
+                td #{r.musicId}
+                td #{r.difficultId != null ? r.difficultId : '—'}
+                td #{r.score != null ? r.score.toLocaleString() : '—'}
+                td #{fmt(r.rating)}

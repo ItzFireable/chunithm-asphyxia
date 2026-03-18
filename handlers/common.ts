@@ -65,16 +65,32 @@ export const GetGameSetting = async (data: any) => {
 };
 
 export const GetGameEvent = async (data: any) => {
-  const events = await DB.Find({collection: 'event', enabled: true});
-  if (!events || events.length === 0)
-    return {type: data.type ?? 1, length: 0, gameEventList: []};
+  const dbEvents = await DB.Find({collection: 'event', enabled: true}) || [];
 
-  const list = events.map((e: any) => ({
+  const list = dbEvents.map((e: any) => ({
     id: e.eventId,
     type: e.type,
     startDate: e.startDate || '2017-12-05 07:00:00.0',
     endDate: '2099-12-31 00:00:00',
   }));
+
+  // unlock_all_songs: inject a blanket set of known map/story event IDs
+  // so all world's end songs and map areas become accessible
+  if (U.GetConfig('unlock_all_songs')) {
+    const existingIds = new Set(list.map((e: any) => e.id));
+    const unlockEvents = [
+      // Core map areas for all versions through X-VERSE
+      8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+      // NEW!! onwards
+      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+      // SUN, LUMINOUS, VERSE, X-VERSE
+      36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+    ];
+    for (const id of unlockEvents) {
+      if (!existingIds.has(id))
+        list.push({id, type: 1, startDate: '2017-12-05 07:00:00.0', endDate: '2099-12-31 00:00:00'});
+    }
+  }
 
   return {type: data.type ?? 1, length: list.length, gameEventList: list};
 };
