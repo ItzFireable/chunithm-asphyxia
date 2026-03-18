@@ -17,5 +17,4 @@ export interface Profile {
   characterId: number;
   medal: number;
   playCount: number;
-  // Add other common fields used in GetUserPreview/GetUserData
 }

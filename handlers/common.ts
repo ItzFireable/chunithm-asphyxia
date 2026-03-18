@@ -167,11 +167,14 @@ export const RemoveToken   = async (data: any) => ({returnCode: '1'});
 
 export const GameLogin = async (data: any) => {
   const userId = data.userId;
-  const profile = await DB.FindOne<Profile>({userId});
-  if (profile) {
+  const refid = await U.GetRefidFromUserId(userId);
+  if (refid) {
     const now = new Date().toISOString().replace('T', ' ').split('.')[0] + '.0';
-    await DB.Update(
-        {userId}, {$inc: {playCount: 1}, $set: {lastPlayDate: now}});
+    await DB.Upsert<Profile>(
+      refid,
+      {collection: 'profile'},
+      {$inc: {playCount: 1}, $set: {lastPlayDate: now, userId}}
+    );
   }
   return {returnCode: 1};
 };

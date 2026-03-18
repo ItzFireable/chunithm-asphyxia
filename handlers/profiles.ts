@@ -21,36 +21,7 @@ export const GetUserPreview = async (data: any) => {
   const profile = await getProfile(userId);
 
   if (!profile) {
-    return {
-      userId,
-      isLogin: false,
-      lastLoginDate: '2020-01-01 00:00:00.0',
-      userName: 'PLAYER',
-      reincarnationNum: 0,
-      level: 1,
-      exp: 0,
-      playerRating: 0,
-      lastGameId: 'SDBT',
-      lastRomVersion: '2.40.00',
-      lastDataVersion: '2.40.00',
-      lastPlayDate: '2020-01-01 00:00:00.0',
-      trophyId: 0,
-      nameplateId: 0,
-      userCharacter: {
-        characterId: 10,
-        level: 1,
-        exp: 0,
-        exValue: 0,
-        playCount: 1,
-        isNewMark: false,
-        isEnlightenance: false
-      },
-      playerLevel: 1,
-      rating: 0,
-      headphone: 0,
-      chargeState: 1,
-      userNameEx: 'PLAYER',
-    };
+    return {};
   }
 
   return {
@@ -426,7 +397,10 @@ export const UpsertUserAll = async (data: any) => {
   updates.lastPlayDate =
       new Date().toISOString().replace('T', ' ').split('.')[0] + '.0';
   const refid = await U.GetRefidFromUserId(userId);
-  if (!refid) return {returnCode: '1'};
+  if (!refid) {
+    console.warn(`[Chunithm] UpsertUserAll: no refid found for userId=${userId} — profile save skipped`);
+    return {returnCode: '1'};
+  }
   await DB.Upsert<Profile>(refid, {collection: 'profile'}, {$set: updates});
 
   if (upsert.userGameOption?.[0])
@@ -538,9 +512,13 @@ export const UpsertUserChargelog = async (data: any) => {
 export const CMUpsertUserFavoriteItem = async (data: any) => {
   if (data.userFavoriteItem) {
     const fav = data.userFavoriteItem;
-    await DB.Upsert(
-        {userId: data.userId, collection: 'favorite', itemId: fav.itemId},
-        {$set: {userId: data.userId, collection: 'favorite', ...fav}});
+    const refid = await U.GetRefidFromUserId(data.userId);
+    if (refid) {
+      await DB.Upsert(
+          refid,
+          {collection: 'favorite', itemId: fav.itemId},
+          {$set: {userId: data.userId, collection: 'favorite', ...fav}});
+    }
   }
   return {returnCode: 1};
 };
