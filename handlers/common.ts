@@ -64,11 +64,20 @@ export const GetGameSetting = async (data: any) => {
   };
 };
 
-export const GetGameEvent = async (data: any) => ({
-  type: data.type ?? 1,
-  length: 0,
-  gameEventList: [],
-});
+export const GetGameEvent = async (data: any) => {
+  const events = await DB.Find({collection: 'event', enabled: true});
+  if (!events || events.length === 0)
+    return {type: data.type ?? 1, length: 0, gameEventList: []};
+
+  const list = events.map((e: any) => ({
+    id: e.eventId,
+    type: e.type,
+    startDate: e.startDate || '2017-12-05 07:00:00.0',
+    endDate: '2099-12-31 00:00:00',
+  }));
+
+  return {type: data.type ?? 1, length: list.length, gameEventList: list};
+};
 
 export const GetGameMessage = async (data: any) => ({
   type: data.type ?? 1,
@@ -82,11 +91,28 @@ export const GetGameMessage = async (data: any) => ({
   }],
 });
 
-export const GetGameCharge = async (data: any) =>
-    ({length: 0, gameChargeList: []});
-export const GetGameIdlist = async (data: any) =>
+export const GetGameCharge = async (data: any) => {
+  const charges = await DB.Find({collection: 'charge_def', enabled: true});
+  if (!charges || charges.length === 0)
+    return {length: 0, gameChargeList: []};
+
+  const list = charges.map((c: any, i: number) => ({
+    orderId: i,
+    chargeId: c.chargeId,
+    price: 1,
+    startDate: '2017-12-05 07:00:00.0',
+    endDate: '2099-12-31 00:00:00.0',
+    salePrice: 1,
+    saleStartDate: '2017-12-05 07:00:00.0',
+    saleEndDate: '2099-12-31 00:00:00.0',
+  }));
+
+  return {length: list.length, gameChargeList: list};
+};
+
+export const GetGameIdlist  = async (data: any) =>
     ({type: data.type ?? 1, length: 0, gameIdlistList: []});
-export const GetGameSale = async (data: any) =>
+export const GetGameSale    = async (data: any) =>
     ({type: data.type ?? 1, length: 0, gameSaleList: []});
 export const GetGameRanking = async (data: any) =>
     ({type: data.type ?? 1, gameRankingList: []});
@@ -102,13 +128,26 @@ export const GetGameCourseLevel = async (data: any) =>
     ({length: 0, gameCourseLevelList: []});
 export const GetGameMapAreaCondition = async (data: any) =>
     ({length: 0, gameMapAreaConditionList: []});
-export const GetGameRankingCount = async (data: any) => ({rankingCount: 0});
-export const GetGameUCCondition = async (data: any) =>
+export const GetGameRankingCount      = async (data: any) => ({rankingCount: 0});
+export const GetGameUCCondition       = async (data: any) =>
     ({length: 0, gameUnlockChallengeConditionList: []});
-export const GetGameLVConditionOpen = async (data: any) =>
+export const GetGameLVConditionOpen   = async (data: any) =>
     ({length: 0, gameLinkedVerseConditionOpenList: []});
 export const GetGameLVConditionUnlock = async (data: any) =>
     ({length: 0, gameLinkedVerseConditionUnlockList: []});
+
+export const GetGameGacha = async (data: any) =>
+    ({type: data.type ?? 1, length: 0, gameGachaList: [], registIdList: []});
+export const GetGameGachaCardById = async (data: any) =>
+    ({type: data.type ?? 1, length: 0, gameGachaCardList: []});
+export const RollGacha = async (data: any) =>
+    ({type: data.type ?? 1, length: 0, gameGachaCardList: []});
+
+export const PrinterLogin  = async (data: any) => ({returnCode: '1'});
+export const PrinterLogout = async (data: any) => ({returnCode: '1'});
+export const CreateToken   = async (data: any) => ({returnCode: '1', userToken: ''});
+export const DeleteToken   = async (data: any) => ({returnCode: '1'});
+export const RemoveToken   = async (data: any) => ({returnCode: '1'});
 
 export const GameLogin = async (data: any) => {
   const userId = data.userId;
@@ -124,10 +163,10 @@ export const GameLogin = async (data: any) => {
 export const GameLogout = async (data: any) => ({returnCode: 1});
 
 export const UpsertClientBookkeeping = async (data: any) => ({returnCode: '1'});
-export const UpsertClientDevelop = async (data: any) => ({returnCode: '1'});
-export const UpsertClientError = async (data: any) => ({returnCode: '1'});
-export const UpsertClientSetting = async (data: any) => ({returnCode: '1'});
-export const UpsertClientTestmode = async (data: any) => ({returnCode: '1'});
-export const UpsertClientUpload = async (data: any) => ({returnCode: '1'});
+export const UpsertClientDevelop     = async (data: any) => ({returnCode: '1'});
+export const UpsertClientError       = async (data: any) => ({returnCode: '1'});
+export const UpsertClientSetting     = async (data: any) => ({returnCode: '1'});
+export const UpsertClientTestmode    = async (data: any) => ({returnCode: '1'});
+export const UpsertClientUpload      = async (data: any) => ({returnCode: '1'});
 
 export const Ping = async () => ({returnCode: 1});

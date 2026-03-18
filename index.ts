@@ -5,140 +5,64 @@ import * as profiles from './handlers/profiles';
 export const register = async () => {
   R.GameCode('SDBT');
   R.GameCode('SDHD');
+  R.GameCode('SDGS');
+  R.GameCode('SDHJ');
 
   R.Contributor('Fireable');
 
-  R.Config('unlock_all_songs', {
-    type: 'boolean',
-    default: true,
-    desc: 'Unlocks all songs for all players.'
-  });
-  R.Config('unlock_all_items', {
-    type: 'boolean',
-    default: false,
-    desc: 'Unlocks all system items and characters.'
-  });
-  R.Config('infinite_tickets', {
-    type: 'boolean',
-    default: true,
-    desc: 'Provides infinite event/map tickets.'
-  });
+  R.Config('unlock_all_songs',  {type: 'boolean', default: true,  desc: 'Unlocks all songs for all players.'});
+  R.Config('unlock_all_items',  {type: 'boolean', default: false, desc: 'Unlocks all items and characters.'});
+  R.Config('infinite_tickets',  {type: 'boolean', default: true,  desc: 'Provides infinite event/map tickets.'});
 
   R.SegaMethodNames([
-    'GetGameSetting',
-    'GetGameEvent',
-    'GetGameMessage',
-    'GetGameCharge',
-    'GetGameGachaCardList',
-    'GetGameMapAreaCondition',
-    'GetGameCourseLevel',
-    'GetGameRankingApi',
-    'GetGameSaleApi',
-    'GetGameIdlist',
-    'GetGameUCConditionApi',
-    'GetGameLVConditionOpenApi',
-    'GetGameLVConditionUnlockApi',
+    'GetGameSetting', 'GetGameEvent', 'GetGameMessage', 'GetGameCharge',
+    'GetGameGachaCardList', 'GetGameGacha', 'GetGameGachaCardById',
+    'GetGameMapAreaCondition', 'GetGameCourseLevel',
+    'GetGameRankingApi', 'GetGameSaleApi', 'GetGameIdlist',
+    'GetGameUCConditionApi', 'GetGameLVConditionOpenApi', 'GetGameLVConditionUnlockApi',
 
-    'GameLogin',
-    'GameLogout',
+    'GameLogin', 'GameLogout',
 
-    'GetUserPreview',
-    'GetUserData',
-    'GetUserDataEx',
-    'GetUserOptionApi',
-    'GetUserOptionExApi',
-
+    'GetUserPreview', 'GetUserData', 'GetUserDataEx',
+    'GetUserOptionApi', 'GetUserOptionExApi',
     'GetUserMusicApi',
+    'GetUserRecentRating', 'GetUserBestRating', 'GetUserRatinglog',
+    'GetUserCharacterSelect', 'GetUserItem', 'GetUserItemEx', 'GetUserCharacter',
+    'GetUserMapApi', 'GetUserMapArea', 'GetUserMapAreaCondition', 'GetUserCourse',
+    'GetUserActivity', 'GetUserCharge',
+    'GetUserTeamApi', 'GetTeamCourseSettingApi', 'GetTeamCourseRuleApi',
+    'GetUserRecentPlayerApi', 'GetUserRegionApi',
+    'GetUserRivalDataApi', 'GetUserRivalMusicApi', 'GetUserSymbolChatSettingApi',
+    'GetUserDuelApi', 'GetUserFavoriteItem', 'GetUserFavoriteMusic',
+    'GetUserUnlockItem', 'GetUserGacha', 'GetUserMacDetail',
+    'GetUserLoginBonus', 'GetUserLoginBonusInfo',
+    'GetUserPlaylog', 'GetUserCtoCPlay',
+    'GetUserNetBattleDataApi', 'GetUserNetBattleRankingInfoApi',
+    'GetUserCMissionApi', 'GetUserCMissionProgress', 'GetUserCMissionListApi',
+    'GetUserUCApi', 'GetUserUCProgressApi',
+    'GetUserRecMusicApi', 'GetUserRecRatingApi', 'GetUserLVApi',
+    'GetUserPrintedCardApi', 'GetUserCardPrintErrorApi',
 
-    'GetUserRecentRating',
-    'GetUserBestRating',
-    'GetUserRatinglog',
+    'UpsertUserAll', 'UpsertUserChargelogApi',
+    'UpsertClientTestmode', 'UpsertClientBookkeeping', 'UpsertClientDevelop',
+    'UpsertClientError', 'UpsertClientSetting', 'UpsertClientUpload',
 
-    'GetUserCharacterSelect',
-    'GetUserItem',
-    'GetUserItemEx',
-    'GetUserCharacter',
+    'RollGacha', 'PrinterLoginApi', 'PrinterLogoutApi',
+    'CreateTokenApi', 'DeleteTokenApi', 'RemoveTokenApi',
 
-    'GetUserMapApi',
-    'GetUserMapArea',
-    'GetUserMapAreaCondition',
-    'GetUserCourse',
+    'BeginMatchingApi', 'EndMatchingApi', 'RemoveMatchingMemberApi', 'GetMatchingStateApi',
 
-    'GetUserActivity',
-    'GetUserCharge',
-
-    'GetUserTeamApi',
-    'GetTeamCourseSettingApi',
-    'GetTeamCourseRuleApi',
-    'GetUserRecentPlayerApi',
-    'GetUserRegionApi',
-    'GetUserRivalDataApi',
-    'GetUserRivalMusicApi',
-
-    'GetUserDuelApi',
-    'GetUserFavoriteItem',
-    'GetUserFavoriteMusic',
-    'GetUserUnlockItem',
-    'GetUserGacha',
-    'GetUserMacDetail',
-
-    'GetUserLoginBonus',
-    'GetUserLoginBonusInfo',
-
-    'GetUserPlaylog',
-    'GetUserCtoCPlay',
-
-    'GetUserNetBattleDataApi',
-    'GetUserNetBattleRankingInfoApi',
-
-    'GetUserCMissionApi',
-    'GetUserCMissionProgress',
-    'GetUserCMissionListApi',
-
-    'GetUserUCApi',
-    'GetUserUCProgressApi',
-
-    'GetUserRecMusicApi',
-    'GetUserRecRatingApi',
-
-    'GetUserLVApi',
-
-    'UpsertUserAll',
-    'UpsertUserChargelogApi',
-    'UpsertClientTestmode',
-    'UpsertClientBookkeeping',
-    'UpsertClientDevelop',
-    'UpsertClientError',
-    'UpsertClientSetting',
-    'UpsertClientUpload',
-
-    'BeginMatchingApi',
-    'EndMatchingApi',
-    'RemoveMatchingMemberApi',
-    'GetMatchingStateApi',
-
-    'CMGetUserCharacter',
-    'CMGetUserPreview',
-    'CMUpsertUserFavoriteItem',
-    'CMUpsertUserGachaTicket',
-    'CMUpsertUserPrintSubData',
-    'CMUpsertUserPrint',
-    'CMUpsertUserPrintCancel',
+    'CMGetUserCharacter', 'CMGetUserPreview', 'CMGetUserData', 'CMGetUserItem',
+    'CMUpsertUserFavoriteItem', 'CMUpsertUserGachaTicket', 'CMUpsertUserGacha',
+    'CMUpsertUserPrintSubData', 'CMUpsertUserPrint', 'CMUpsertUserPrintCancel',
+    'CMUpsertUserPrintSubtract', 'CMUpsertUserPrintlog',
 
     'Ping',
   ]);
 
   R.SegaIterCounts({
-    '9': 67,
-    '10': 44,
-    '11': 54,
-    '12': 25,
-    '13': 70,
-    '14': 36,
-    '15': 8,
-    '16': 56,
-    '17': 42,
-    '18': 14,
+    '9': 67, '10': 44, '11': 54, '12': 25, '13': 70, '14': 36,
+    '15': 8, '16': 56, '17': 42, '18': 14,
   });
 
   R.SegaVersionMap((gameCode: string, version: number) => {
@@ -163,34 +87,68 @@ export const register = async () => {
       if (version < 240) return 17;
       return 18;
     }
+    if (gameCode === 'SDGS') {
+      if (version < 105) return 9;
+      if (version < 110) return 10;
+      if (version < 115) return 11;
+      if (version < 120) return 12;
+      if (version < 125) return 13;
+      if (version < 130) return 14;
+      if (version < 135) return 15;
+      if (version < 140) return 16;
+      if (version < 150) return 17;
+      return 18;
+    }
+    if (gameCode === 'SDHJ') {
+      if (version < 110) return 11;
+      if (version < 120) return 12;
+      if (version < 130) return 15;
+      return 17;
+    }
     return -1;
   });
 
   R.SegaCrypto({
-    '15': [
-      '259DAAA9A63F83C19F84F860A3815D89', '94165F8DE25CA432B94F3C8A08197771',
-      '6FBE6300AE4D024B1277F70F0BF21DA9'
-    ],
-    '16': [
-      '8D9C08D69A5D6B600508CEF6E4A836AF', '9890F098C220E7783D5C588B871BCC42',
-      'C6C38A0FCDD0602F82718E349896792E'
-    ],
-    '17': [
-      'B2A5AA6821A8BA52C7C83DBE262529C2', '960904E04907F6A08535A6AE8D3B3677',
-      '91A8DD686FB1BE81E27B13AAF8FCB170'
-    ],
-    '18': [
-      'CE7508AA82647703975C96A8386377AE', '91079F36CB17D9808332A69A8E2E3942',
-      'C6C38A0FCDD0602F82718E349896792E'
-    ],
+    '15': ['259DAAA9A63F83C19F84F860A3815D89', '94165F8DE25CA432B94F3C8A08197771', '6FBE6300AE4D024B1277F70F0BF21DA9'],
+    '16': ['8D9C08D69A5D6B600508CEF6E4A836AF', '9890F098C220E7783D5C588B871BCC42', 'C6C38A0FCDD0602F82718E349896792E'],
+    '17': ['B2A5AA6821A8BA52C7C83DBE262529C2', '960904E04907F6A08535A6AE8D3B3677', '91A8DD686FB1BE81E27B13AAF8FCB170'],
+    '18': ['CE7508AA82647703975C96A8386377AE', '91079F36CB17D9808332A69A8E2E3942', 'C6C38A0FCDD0602F82718E349896792E'],
+  });
+
+  R.WebUIEvent('chuniAddEvent', async (data: any) => {
+    const eventId = parseInt(data.eventId);
+    const type    = parseInt(data.type ?? '1');
+    if (!eventId) return;
+    await DB.Upsert(
+      {collection: 'event', eventId},
+      {$set: {
+        collection: 'event',
+        eventId,
+        type,
+        name: data.name || `Event ${eventId}`,
+        startDate: '2017-12-05 07:00:00.0',
+        enabled: true,
+      }}
+    );
+  });
+
+  R.WebUIEvent('chuniToggleEvent', async (data: any) => {
+    const eventId = parseInt(data.eventId);
+    const enabled = data.enabled === 'true';
+    await DB.Update({collection: 'event', eventId}, {$set: {enabled}});
+  });
+
+  R.WebUIEvent('chuniDeleteEvent', async (data: any) => {
+    await DB.Remove({collection: 'event', eventId: parseInt(data.eventId)});
   });
 };
 
-export const handleSega =
-    async (gameCode: string, method: string, data: any) => {
+export const handleSega = async (gameCode: string, method: string, data: any) => {
   const cleanMethod = method.replace(/Api$/, '');
-  const handler = (matching as any)[cleanMethod] ||
-      (profiles as any)[cleanMethod] || (common as any)[cleanMethod];
+  const handler =
+      (matching as any)[cleanMethod] ||
+      (profiles as any)[cleanMethod] ||
+      (common as any)[cleanMethod];
 
   if (typeof handler === 'function') return await handler(data);
 

@@ -1,0 +1,56 @@
+//DATA//
+  events: DB.Find(null, { collection: 'event' })
+
+div
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-calendar
+        | Event Management
+    .card-content
+      p.mb-3 Events loaded here are sent to all connected cabinets. Add events by ID and type, then enable/disable them as needed.
+      form(method="post" action="/emit/chuniAddEvent")
+        .field.is-grouped
+          .control
+            input.input(type="number" name="eventId" placeholder="Event ID" required)
+          .control
+            input.input(type="number" name="type" placeholder="Type (1=normal)" value="1")
+          .control
+            input.input(type="text" name="name" placeholder="Name (optional)")
+          .control
+            button.button.is-primary(type="submit") Add Event
+      hr
+      if !events || events.length === 0
+        p.has-text-grey No events configured yet.
+      else
+        table.table.is-fullwidth.is-striped
+          thead
+            tr
+              th ID
+              th Type
+              th Name
+              th Start Date
+              th Enabled
+              th Actions
+          tbody
+            each e in events
+              tr
+                td #{e.eventId}
+                td #{e.type}
+                td #{e.name || '-'}
+                td #{e.startDate || '2017-12-05 07:00:00.0'}
+                td
+                  if e.enabled
+                    span.tag.is-success Enabled
+                  else
+                    span.tag.is-danger Disabled
+                td
+                  form(method="post" action="/emit/chuniToggleEvent" style="display:inline")
+                    input(type="hidden" name="eventId" value=e.eventId)
+                    input(type="hidden" name="enabled" value=(!e.enabled).toString())
+                    button.button.is-small.is-warning(type="submit") Toggle
+                  |  
+                  form(method="post" action="/emit/chuniDeleteEvent" style="display:inline")
+                    input(type="hidden" name="eventId" value=e.eventId)
+                    button.button.is-small.is-danger(type="submit") Delete
